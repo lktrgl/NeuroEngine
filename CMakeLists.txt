@@ -17,6 +17,7 @@ add_executable (NeuroEngine_cpp
 				src/cppapp/main.cpp
 				include/nnet/neuron_line.h
 				include/nnet/neuron.h
+				include/noptim/metrics.h
 				)
 
 target_link_libraries ( NeuroEngine_cpp

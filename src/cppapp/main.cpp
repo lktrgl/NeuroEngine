@@ -1,5 +1,6 @@
 #include <nnet/neuron.h>
 #include <nnet/neuron_line.h>
+#include <noptim/metrics.h>
 
 #include <cassert>
 #include <iostream>
@@ -13,6 +14,10 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 
     constexpr size_t input_dimension = 3;
     constexpr input_t expected_result = 6;
+    constexpr input_t expected_loss = 0;
+    constexpr input_t fake_expected_result = 2;
+    constexpr input_t fake_expected_loss = ( expected_result - fake_expected_result ) *
+                                           ( expected_result - fake_expected_result );
 
     using my_neuron_t = nnet::neuron_t<input_t, input_dimension>;
 
@@ -25,6 +30,9 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
     neuron.apply ( inputs );
 
     assert ( expected_result == neuron.get_value() );
+
+    assert ( expected_loss == noptim::neuron_loss<input_t> ( neuron, expected_result ) );
+    assert ( fake_expected_loss == noptim::neuron_loss<input_t> ( neuron, fake_expected_result ) );
   }
 
   {
