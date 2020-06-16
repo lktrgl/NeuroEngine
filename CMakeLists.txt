@@ -9,8 +9,14 @@ set (CMAKE_C_FLAGS "-O0 -g3 -Wall -Wextra -Werror")
 
 find_package (Threads REQUIRED)
 
+include_directories (
+				include
+				)
+
 add_executable (NeuroEngine_cpp
 				src/cppapp/main.cpp
+				src/nnet/neuron.cpp
+				include/nnet/neuron.h
 				)
 
 target_link_libraries ( NeuroEngine_cpp
