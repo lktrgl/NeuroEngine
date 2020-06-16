@@ -15,7 +15,7 @@ include_directories (
 
 add_executable (NeuroEngine_cpp
 				src/cppapp/main.cpp
-				src/nnet/neuron.cpp
+				include/nnet/neuron_line.h
 				include/nnet/neuron.h
 				)
 
