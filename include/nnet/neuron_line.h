@@ -76,5 +76,5 @@ private:
   line_t line{};
 };
 
-} /* namespace nnet */
+} // namespace nnet
 

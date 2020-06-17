@@ -32,5 +32,5 @@ OUTPUT_T neuron_line_loss (
   return result;
 }
 
-} /* namespace noptim */
+} // namespace noptim
 

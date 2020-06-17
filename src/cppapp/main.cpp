@@ -1,9 +1,10 @@
 #include <nnet/neuron.h>
 #include <nnet/neuron_line.h>
 #include <noptim/metrics.h>
+#include <noptim/extreme.h>
 
 #include <cassert>
-#include <iostream>
+#include <cmath>
 
 int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 {
@@ -68,6 +69,25 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 
     assert ( expected_loss == noptim::neuron_line_loss<input_t> ( neuron_line, expected_results ) );
     assert ( fake_expected_loss == noptim::neuron_line_loss<input_t> ( neuron_line, fake_expected_results ) );
+  }
+
+  {
+    // smoke test for the noptim::find_minimum_dichotomie<>(.)
+
+    auto my_f = [] ( double x )->double
+    {
+      return ( x - 1.0 ) * ( x - 1.0 );
+    };
+
+    auto const xa = -1.0;
+    auto const xb = 2.0;
+    auto const eps = 0.01;
+
+    auto const expected_x_min = 1.0;
+
+    auto const x_min = noptim::find_minimum_dichotomie ( xa, xb, eps, my_f );
+
+    assert ( fabs ( x_min - expected_x_min ) <= eps );
   }
 
   return 0;

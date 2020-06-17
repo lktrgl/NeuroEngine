@@ -49,5 +49,5 @@ private:
   koef_array_t koef{};
 };
 
-} /* namespace nnet */
+} // namespace nnet
 
