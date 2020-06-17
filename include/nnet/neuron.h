@@ -17,6 +17,11 @@ struct neuron_t
   using koef_array_t = std::array<koef_t, INPUT_DIMENSION>;
   using input_array_t = std::array<input_t, INPUT_DIMENSION>;
 
+  koef_array_t& get_koefs () noexcept
+  {
+    return koef;
+  }
+
   koef_array_t const& get_koefs () const noexcept
   {
     return koef;

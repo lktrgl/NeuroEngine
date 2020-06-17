@@ -10,21 +10,21 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
   {
     // smoke test for the nnet::neuron_t<>
 
-    using input_t = int;
-
     constexpr size_t input_dimension = 3;
+
+    using input_t = int;
+    using my_neuron_t = nnet::neuron_t<input_t, input_dimension>;
+
     constexpr input_t expected_result = 6;
     constexpr input_t expected_loss = 0;
     constexpr input_t fake_expected_result = 2;
     constexpr input_t fake_expected_loss = ( expected_result - fake_expected_result ) *
                                            ( expected_result - fake_expected_result );
 
-    using my_neuron_t = nnet::neuron_t<input_t, input_dimension>;
-
-    my_neuron_t neuron;
-
     constexpr my_neuron_t::koef_array_t const koefs = {1, 2, 3};
     constexpr my_neuron_t::input_array_t const inputs = {1, 1, 1};
+
+    my_neuron_t neuron;
 
     neuron.set_koefs ( koefs );
     neuron.apply ( inputs );
@@ -38,18 +38,24 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
   {
     // smoke test for the nnet::neuron_line_t<>
 
-    using input_t = int;
-
     constexpr size_t input_dimension = 3;
     constexpr size_t line_dimension = 3;
-    constexpr input_t expected_result = 6;
 
+    using input_t = int;
     using my_neuron_line_t = nnet::neuron_line_t<input_t, input_dimension, line_dimension>;
 
-    my_neuron_line_t neuron_line;
+    constexpr input_t expected_result = 6;
+    constexpr input_t expected_loss = 0;
+    constexpr input_t fake_expected_result_value = 2;
+    constexpr input_t fake_expected_loss = line_dimension * ( expected_result - fake_expected_result_value )
+                                           * ( expected_result - fake_expected_result_value );
 
     constexpr my_neuron_line_t::neuron_t::koef_array_t const koefs = {1, 2, 3};
     constexpr my_neuron_line_t::neuron_t::input_array_t const inputs = {1, 1, 1};
+    constexpr my_neuron_line_t::output_array_t const expected_results = {expected_result, expected_result, expected_result};
+    constexpr my_neuron_line_t::output_array_t const fake_expected_results = {fake_expected_result_value, fake_expected_result_value, fake_expected_result_value};
+
+    my_neuron_line_t neuron_line;
 
     for ( size_t i = 0; i < line_dimension; ++i )
     {
@@ -58,10 +64,10 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 
     neuron_line.apply ( inputs );
 
-    for ( size_t i = 0; i < line_dimension; ++i )
-    {
-      assert ( expected_result == neuron_line[i].get_value() );
-    }
+    assert ( expected_results == neuron_line.get_value() );
+
+    assert ( expected_loss == noptim::neuron_line_loss<input_t> ( neuron_line, expected_results ) );
+    assert ( fake_expected_loss == noptim::neuron_line_loss<input_t> ( neuron_line, fake_expected_results ) );
   }
 
   return 0;
