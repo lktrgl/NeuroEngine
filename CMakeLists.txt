@@ -11,6 +11,7 @@ find_package (Threads REQUIRED)
 
 include_directories (
 				include
+				contrib/lggm/include
 				)
 
 add_executable (NeuroEngine_cpp
