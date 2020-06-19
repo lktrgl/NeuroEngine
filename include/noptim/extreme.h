@@ -33,42 +33,72 @@ using loss_function_t = auto ( T )->T;
 
 struct find_minimum_t
 {
-  size_t loop_count{};
+  size_t funct_invocation_count{};
 };
 
 template <typename T, typename LOSS_FUNCTION_T = loss_function_t<T>>
-T find_minimum_dichotomie ( T const xa, T const xb, T const eps, LOSS_FUNCTION_T& funct,
+T find_minimum_dichotomie ( T const xa, T const xb,
+                            T const eps, LOSS_FUNCTION_T& funct,
                             find_minimum_t* statistics )
 {
 
   auto x0 = xa;
-  auto f0 = funct ( x0 );
   auto x1 = xb;
+
+  auto x0i = ( x1 + x0 ) / details::middle_div<T>();;
+  auto x1i = x1;
+
+  auto f0i = funct ( x0i );
+  auto f1i = f0i;
+
+  if ( statistics )
+  {
+    statistics->funct_invocation_count++;
+  }
 
   while ( x1 - x0 > eps )
   {
     if ( statistics )
     {
-      statistics->loop_count++;
+      statistics->funct_invocation_count++;
     }
 
-    auto const x2 = ( x1 + x0 ) / details::middle_div<T>();
-    auto const f2 = funct ( x2 );
+    x1i = ( x1 + x0i ) / details::middle_div<T>();
+    f1i = funct ( x1i );
 
-    if ( f0 > f2 )
+    if ( f0i >= f1i )
     {
-      x0 = x2;
-      f0 = f2;
-    }
-    else if ( f0 < f2 )
-    {
-      x0 = ( xa + x2 ) / details::middle_div<T>();
-      f0 = funct ( x0 );
-      x1 = x2;
+      x0 = x0i;
+
+      x0i = x1i;
+      f0i = f1i;
     }
     else
     {
-      return x2;
+      if ( statistics )
+      {
+        statistics->funct_invocation_count++;
+      }
+
+      auto const x2i = ( x0 + x0i ) / details::middle_div<T>();
+      auto const f2i = funct ( x2i );
+
+      if ( f2i <= f0i )
+      {
+        x1 = x1i;
+
+        x0i = x2i;
+        f0i = f2i;
+      }
+      else // if ( f2i >= f0i )
+      {
+        x1 = x1i;
+
+        x0 = x2i;
+
+        // x01 = x01;
+        // f0i = f0i;
+      }
     }
   }
 
@@ -76,7 +106,8 @@ T find_minimum_dichotomie ( T const xa, T const xb, T const eps, LOSS_FUNCTION_T
 }
 
 template <typename T, typename LOSS_FUNCTION_T = loss_function_t<T>>
-T find_minimum_gold_ratio ( T const xa, T const xb, T const eps, LOSS_FUNCTION_T& funct,
+T find_minimum_gold_ratio ( T const xa, T const xb,
+                            T const eps, LOSS_FUNCTION_T& funct,
                             find_minimum_t* statistics )
 {
 
@@ -89,13 +120,13 @@ T find_minimum_gold_ratio ( T const xa, T const xb, T const eps, LOSS_FUNCTION_T
   auto f0i = funct ( x0i );
   auto f1i = funct ( x1i );
 
+  if ( statistics )
+  {
+    statistics->funct_invocation_count += 2;
+  }
+
   while ( x1 - x0 > eps )
   {
-    if ( statistics )
-    {
-      statistics->loop_count++;
-    }
-
     if ( f0i <= f1i )
     {
       // x0 = x0;
@@ -106,6 +137,11 @@ T find_minimum_gold_ratio ( T const xa, T const xb, T const eps, LOSS_FUNCTION_T
 
       f1i = f0i;
       f0i = funct ( x0i );
+
+      if ( statistics )
+      {
+        statistics->funct_invocation_count++;
+      }
     }
     else if ( f0i > f1i )
     {
@@ -115,8 +151,13 @@ T find_minimum_gold_ratio ( T const xa, T const xb, T const eps, LOSS_FUNCTION_T
       x0i = x1i;
       x1i = x0 + details::tau * ( x1 - x0 );
 
-      f0i=f1i;
+      f0i = f1i;
       f1i = funct ( x1i );
+
+      if ( statistics )
+      {
+        statistics->funct_invocation_count++;
+      }
     }
   }
 
