@@ -105,6 +105,8 @@ T find_minimum_dichotomie ( T const xa, T const xb,
   return ( x0 + x1 ) / details::middle_div<T>();
 }
 
+// taken from:
+// https://math.semestr.ru/optim/golden.php
 template <typename T, typename LOSS_FUNCTION_T = loss_function_t<T>>
 T find_minimum_gold_ratio ( T const xa, T const xb,
                             T const eps, LOSS_FUNCTION_T& funct,
