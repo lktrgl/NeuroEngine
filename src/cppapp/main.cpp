@@ -2,6 +2,7 @@
 #include <nnet/neuron_line.h>
 #include <noptim/metrics.h>
 #include <noptim/extreme.h>
+#include <noptim/quick_descent.h>
 
 #include <cassert>
 #include <cmath>
@@ -153,6 +154,38 @@ void smoke_test_find_minimum_gold_ratio()
   }
 }
 
+void smoke_test_quick_descent()
+{
+  constexpr auto const d = 10.0;
+
+  using my_quick_descent_t = noptim::quick_descent<double, double>;
+
+  using my_funct_arg_t = my_quick_descent_t::funct_args_t;
+
+  auto my_f = [] ( my_funct_arg_t const & x )->double
+  {
+    return - ( d* d * std::get<0> ( x ) - std::get<0> ( x ) * std::get<0> ( x ) * std::get<0> ( x ) );
+  };
+
+  constexpr auto const h = 0.01;
+
+  auto const xa = 0.;
+  auto const xb = d;
+  //  auto const eps = 0.01;
+
+  my_funct_arg_t const min_point = {xa};
+  my_funct_arg_t const max_point = {xb};
+  my_funct_arg_t const start_point = { ( xa + xb ) / 2.0};
+
+  my_funct_arg_t const step_point = { ( xa + xb ) / 2.0 + h};
+
+  my_quick_descent_t qd ( h,
+                          min_point, max_point, start_point,
+                          my_f );
+
+  auto gr0 = qd.get_gradient ( start_point, std::make_index_sequence<my_quick_descent_t::funct_args_count>() );
+}
+
 int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 {
   smoke_test_neuron();
@@ -162,6 +195,8 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
   smoke_test_find_minimum_dichotomie();
 
   smoke_test_find_minimum_gold_ratio();
+
+  smoke_test_quick_descent();
 
   return 0;
 }
