@@ -16,10 +16,10 @@ void smoke_test_neuron()
   using my_neuron_t = nnet::neuron_t<input_t, input_dimension>;
 
   constexpr input_t expected_result = 6;
-  constexpr input_t expected_loss = 0;
+  [[maybe_unused]]constexpr input_t expected_loss = 0;
   constexpr input_t fake_expected_result = 2;
-  constexpr input_t fake_expected_loss = ( expected_result - fake_expected_result ) *
-                                         ( expected_result - fake_expected_result );
+  [[maybe_unused]]constexpr input_t fake_expected_loss = ( expected_result - fake_expected_result ) *
+      ( expected_result - fake_expected_result );
 
   constexpr my_neuron_t::koef_array_t const koefs = {1, 2, 3};
   constexpr my_neuron_t::input_array_t const inputs = {1, 1, 1};
@@ -45,15 +45,15 @@ void smoke_test_neuron_line()
   using my_neuron_line_t = nnet::neuron_line_t<input_t, input_dimension, line_dimension>;
 
   constexpr input_t expected_result = 6;
-  constexpr input_t expected_loss = 0;
+  [[maybe_unused]]constexpr input_t expected_loss = 0;
   constexpr input_t fake_expected_result_value = 2;
-  constexpr input_t fake_expected_loss = line_dimension * ( expected_result - fake_expected_result_value )
-                                         * ( expected_result - fake_expected_result_value );
+  [[maybe_unused]]constexpr input_t fake_expected_loss = line_dimension * ( expected_result - fake_expected_result_value )
+      * ( expected_result - fake_expected_result_value );
 
   constexpr my_neuron_line_t::neuron_t::koef_array_t const koefs = {1, 2, 3};
   constexpr my_neuron_line_t::neuron_t::input_array_t const inputs = {1, 1, 1};
-  constexpr my_neuron_line_t::output_array_t const expected_results = {expected_result, expected_result, expected_result};
-  constexpr my_neuron_line_t::output_array_t const fake_expected_results = {fake_expected_result_value, fake_expected_result_value, fake_expected_result_value};
+  [[maybe_unused]]constexpr my_neuron_line_t::output_array_t const expected_results = {expected_result, expected_result, expected_result};
+  [[maybe_unused]]constexpr my_neuron_line_t::output_array_t const fake_expected_results = {fake_expected_result_value, fake_expected_result_value, fake_expected_result_value};
 
   my_neuron_line_t neuron_line;
 
@@ -83,10 +83,10 @@ void smoke_test_find_minimum_dichotomie()
     auto const xb = 2.0;
     auto const eps = 0.01;
 
-    auto const expected_x_min = 1.0;
+    [[maybe_unused]]auto const expected_x_min = 1.0;
 
     noptim::find_minimum_details::find_minimum_t stat;
-    auto const x_min = noptim::find_minimum_dichotomie ( xa, xb, eps, my_f, &stat );
+    [[maybe_unused]]auto const x_min = noptim::find_minimum_dichotomie ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
   }
@@ -103,10 +103,10 @@ void smoke_test_find_minimum_dichotomie()
     auto const xb = d;
     auto const eps = 0.01;
 
-    constexpr auto const expected_x_min = d / sqrt ( 3.0 );
+    [[maybe_unused]]constexpr auto const expected_x_min = d / sqrt ( 3.0 );
 
     noptim::find_minimum_details::find_minimum_t stat;
-    auto const x_min = noptim::find_minimum_dichotomie ( xa, xb, eps, my_f, &stat );
+    [[maybe_unused]]auto const x_min = noptim::find_minimum_dichotomie ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
   }
@@ -125,10 +125,10 @@ void smoke_test_find_minimum_gold_ratio()
     auto const xb = 2.0;
     auto const eps = 0.01;
 
-    auto const expected_x_min = 1.0;
+    [[maybe_unused]]auto const expected_x_min = 1.0;
 
     noptim::find_minimum_details::find_minimum_t stat;
-    auto const x_min = noptim::find_minimum_gold_ratio ( xa, xb, eps, my_f, &stat );
+    [[maybe_unused]]auto const x_min = noptim::find_minimum_gold_ratio ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
   }
@@ -145,10 +145,10 @@ void smoke_test_find_minimum_gold_ratio()
     auto const xb = d;
     auto const eps = 0.01;
 
-    constexpr auto const expected_x_min = d / sqrt ( 3.0 );
+    [[maybe_unused]]constexpr auto const expected_x_min = d / sqrt ( 3.0 );
 
     noptim::find_minimum_details::find_minimum_t stat;
-    auto const x_min = noptim::find_minimum_gold_ratio ( xa, xb, eps, my_f, &stat );
+    [[maybe_unused]]auto const x_min = noptim::find_minimum_gold_ratio ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
   }
@@ -183,7 +183,7 @@ void smoke_test_quick_descent()
                           min_point, max_point, start_point,
                           my_f );
 
-  auto gr0 = qd.get_gradient ( start_point, std::make_index_sequence<my_quick_descent_t::funct_args_count>() );
+  auto gr0 = qd.get_gradient ( start_point );
 }
 
 int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
