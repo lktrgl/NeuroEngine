@@ -84,7 +84,7 @@ void smoke_test_find_minimum_dichotomie()
 
     auto const expected_x_min = 1.0;
 
-    noptim::find_minimum_t stat;
+    noptim::find_minimum_details::find_minimum_t stat;
     auto const x_min = noptim::find_minimum_dichotomie ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
@@ -104,7 +104,7 @@ void smoke_test_find_minimum_dichotomie()
 
     constexpr auto const expected_x_min = d / sqrt ( 3.0 );
 
-    noptim::find_minimum_t stat;
+    noptim::find_minimum_details::find_minimum_t stat;
     auto const x_min = noptim::find_minimum_dichotomie ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
@@ -126,7 +126,7 @@ void smoke_test_find_minimum_gold_ratio()
 
     auto const expected_x_min = 1.0;
 
-    noptim::find_minimum_t stat;
+    noptim::find_minimum_details::find_minimum_t stat;
     auto const x_min = noptim::find_minimum_gold_ratio ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
@@ -146,7 +146,7 @@ void smoke_test_find_minimum_gold_ratio()
 
     constexpr auto const expected_x_min = d / sqrt ( 3.0 );
 
-    noptim::find_minimum_t stat;
+    noptim::find_minimum_details::find_minimum_t stat;
     auto const x_min = noptim::find_minimum_gold_ratio ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );

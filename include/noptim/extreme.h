@@ -6,7 +6,7 @@
 namespace noptim
 {
 
-namespace details
+namespace find_minimum_details
 {
 
 template<typename T>
@@ -26,8 +26,6 @@ constexpr double const tau = 0.618;
 constexpr double const tau_compliment = 1.0 - tau;
 
 
-}  // namespace details
-
 template <typename T>
 using loss_function_t = auto ( T )->T;
 
@@ -36,16 +34,18 @@ struct find_minimum_t
   size_t funct_invocation_count{};
 };
 
-template <typename T, typename LOSS_FUNCTION_T = loss_function_t<T>>
+}  // namespace find_minimum_details
+
+template <typename T, typename LOSS_FUNCTION_T = find_minimum_details::loss_function_t<T>>
 T find_minimum_dichotomie ( T const xa, T const xb,
                             T const eps, LOSS_FUNCTION_T& funct,
-                            find_minimum_t* statistics )
+                            find_minimum_details::find_minimum_t* statistics )
 {
 
   auto x0 = xa;
   auto x1 = xb;
 
-  auto x0i = ( x1 + x0 ) / details::middle_div<T>();;
+  auto x0i = ( x1 + x0 ) / find_minimum_details::middle_div<T>();;
   auto x1i = x1;
 
   auto f0i = funct ( x0i );
@@ -63,7 +63,7 @@ T find_minimum_dichotomie ( T const xa, T const xb,
       statistics->funct_invocation_count++;
     }
 
-    x1i = ( x1 + x0i ) / details::middle_div<T>();
+    x1i = ( x1 + x0i ) / find_minimum_details::middle_div<T>();
     f1i = funct ( x1i );
 
     if ( f0i >= f1i )
@@ -80,7 +80,7 @@ T find_minimum_dichotomie ( T const xa, T const xb,
         statistics->funct_invocation_count++;
       }
 
-      auto const x2i = ( x0 + x0i ) / details::middle_div<T>();
+      auto const x2i = ( x0 + x0i ) / find_minimum_details::middle_div<T>();
       auto const f2i = funct ( x2i );
 
       if ( f2i <= f0i )
@@ -102,22 +102,22 @@ T find_minimum_dichotomie ( T const xa, T const xb,
     }
   }
 
-  return ( x0 + x1 ) / details::middle_div<T>();
+  return ( x0 + x1 ) / find_minimum_details::middle_div<T>();
 }
 
 // taken from:
 // https://math.semestr.ru/optim/golden.php
-template <typename T, typename LOSS_FUNCTION_T = loss_function_t<T>>
+template <typename T, typename LOSS_FUNCTION_T = find_minimum_details::loss_function_t<T>>
 T find_minimum_gold_ratio ( T const xa, T const xb,
                             T const eps, LOSS_FUNCTION_T& funct,
-                            find_minimum_t* statistics )
+                            find_minimum_details::find_minimum_t* statistics )
 {
 
   auto x0 = xa;
   auto x1 = xb;
 
-  auto x0i = x0 + details::tau_compliment * ( x1 - x0 );
-  auto x1i = x0 + details::tau * ( x1 - x0 );
+  auto x0i = x0 + find_minimum_details::tau_compliment * ( x1 - x0 );
+  auto x1i = x0 + find_minimum_details::tau * ( x1 - x0 );
 
   auto f0i = funct ( x0i );
   auto f1i = funct ( x1i );
@@ -135,7 +135,7 @@ T find_minimum_gold_ratio ( T const xa, T const xb,
       x1 = x1i;
 
       x1i = x0i;
-      x0i = x0 + details::tau_compliment * ( x1 - x0 );
+      x0i = x0 + find_minimum_details::tau_compliment * ( x1 - x0 );
 
       f1i = f0i;
       f0i = funct ( x0i );
@@ -151,7 +151,7 @@ T find_minimum_gold_ratio ( T const xa, T const xb,
       // x1 = x1;
 
       x0i = x1i;
-      x1i = x0 + details::tau * ( x1 - x0 );
+      x1i = x0 + find_minimum_details::tau * ( x1 - x0 );
 
       f0i = f1i;
       f1i = funct ( x1i );
@@ -163,7 +163,7 @@ T find_minimum_gold_ratio ( T const xa, T const xb,
     }
   }
 
-  return ( x0 + x1 ) / details::middle_div<T>();
+  return ( x0 + x1 ) / find_minimum_details::middle_div<T>();
 }
 
 }  // namespace noptim
