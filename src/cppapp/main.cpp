@@ -19,7 +19,7 @@ void smoke_test_neuron()
   constexpr input_t expected_loss = 0;
   constexpr input_t fake_expected_result = 2;
   constexpr input_t fake_expected_loss = ( expected_result - fake_expected_result ) *
-      ( expected_result - fake_expected_result );
+                                         ( expected_result - fake_expected_result );
 
   constexpr my_neuron_t::koef_array_t const koefs = {1, 2, 3};
   constexpr my_neuron_t::input_array_t const inputs = {1, 1, 1};
@@ -48,7 +48,7 @@ void smoke_test_neuron_line()
   constexpr input_t expected_loss = 0;
   constexpr input_t fake_expected_result_value = 2;
   constexpr input_t fake_expected_loss = line_dimension * ( expected_result - fake_expected_result_value )
-      * ( expected_result - fake_expected_result_value );
+                                         * ( expected_result - fake_expected_result_value );
 
   constexpr my_neuron_line_t::neuron_t::koef_array_t const koefs = {1, 2, 3};
   constexpr my_neuron_line_t::neuron_t::input_array_t const inputs = {1, 1, 1};
@@ -158,36 +158,51 @@ void smoke_test_find_minimum_gold_ratio()
   }
 }
 
+// smoke test for the noptim::quick_descent<> class
 void smoke_test_quick_descent()
 {
-  constexpr auto const d = 10.0;
-
-  using my_quick_descent_t = noptim::quick_descent<double, double>;
-
-  using my_funct_arg_t = my_quick_descent_t::funct_args_t;
-
-  auto my_f = [] ( my_funct_arg_t const & x )->double
+  // test for the single argument function
   {
-    return - ( d* d * std::get<0> ( x ) - std::get<0> ( x ) * std::get<0> ( x ) * std::get<0> ( x ) );
-  };
+    constexpr auto const d = 10.0;
 
-  constexpr auto const h = 0.01;
+    using my_quick_descent_t = noptim::quick_descent<noptim::find_minimum_method::gold_ratio, double, double>;
 
-  auto const xa = 0.;
-  auto const xb = d;
-  //  auto const eps = 0.01;
+    using my_funct_ret_t = my_quick_descent_t::funct_ret_t;
+    using my_funct_args_t = my_quick_descent_t::funct_args_t;
+    using my_funct_gradient_t = my_quick_descent_t::funct_gradient_t;
 
-  my_funct_arg_t const min_point = {xa};
-  my_funct_arg_t const max_point = {xb};
-  my_funct_arg_t const start_point = { ( xa + xb ) / 2.0};
+    auto my_f = [] ( my_funct_args_t const & x )->my_funct_ret_t
+    {
+      return - ( d* d * std::get<0> ( x ) - std::get<0> ( x ) * std::get<0> ( x ) * std::get<0> ( x ) );
+    };
 
-  my_funct_arg_t const step_point = { ( xa + xb ) / 2.0 + h};
+    constexpr auto const h = 0.01;
 
-  my_quick_descent_t qd ( h,
-                          min_point, max_point, start_point,
-                          my_f );
+    auto const xa = 0.0;
+    auto const xb = d;
+    auto const eps = 0.01;
 
-  auto gr0 = qd.get_gradient ( start_point );
+    my_funct_args_t const min_point = {xa};
+    my_funct_args_t const max_point = {xb};
+
+    my_funct_args_t const step_point = {xa + h};
+
+
+    my_funct_args_t const expected_x_min = { d / sqrt ( 3.0 ) };
+
+    my_quick_descent_t qd ( h, eps,
+                            min_point, max_point,
+                            my_f );
+
+    my_funct_gradient_t const gr0 = qd.get_gradient ( min_point );
+    my_funct_gradient_t const expected_gr0 = my_f ( step_point ) - my_f ( min_point );
+
+    assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
+
+    my_funct_args_t const x_min = qd.find_minimum();
+
+    assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
+  }
 }
 
 int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )

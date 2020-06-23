@@ -44,7 +44,7 @@ using target_function_t = std::function<T ( T ) >;
 
 
 
-template<typename T, find_minimum_method ENUM_VALUE>
+template<typename T, find_minimum_method METHOD_ENUM>
 struct find_minimum_traits;
 
 template<typename T>
@@ -186,7 +186,7 @@ struct find_minimum_traits<T, find_minimum_method::gold_ratio>
 
 }  // namespace find_minimum_details
 
-template <find_minimum_method ENUM_VALUE,
+template <find_minimum_method METHOD_ENUM,
           typename T,
           typename LOSS_FUNCTION_T = find_minimum_details::target_function_t<T>>
 T find_minimum ( T const xa, T const xb,
@@ -194,7 +194,7 @@ T find_minimum ( T const xa, T const xb,
                  LOSS_FUNCTION_T& funct,
                  find_minimum_t* statistics )
 {
-  return find_minimum_details::find_minimum_traits<T, ENUM_VALUE>::method ( xa, xb, eps, funct, statistics );
+  return find_minimum_details::find_minimum_traits<T, METHOD_ENUM>::method ( xa, xb, eps, funct, statistics );
 }
 
 }  // namespace noptim
