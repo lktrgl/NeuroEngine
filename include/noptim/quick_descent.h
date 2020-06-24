@@ -120,11 +120,9 @@ private:
   {
     RET_TYPE const f0 = funct ( args );
 
-    constexpr auto my_dummy = [] ( auto ) {};
+    funct_gradient_t result{};
 
-    funct_gradient_t result = { ( ( my_dummy ( Indexes ), f0 ), ... ) };
-
-    ( ( std::get<Indexes> ( result ) = funct ( apply_step<Indexes> ( step, args ) ) - std::get<Indexes> ( result ) ), ... );
+    ( ( std::get<Indexes> ( result ) = funct ( apply_step<Indexes> ( step, args ) ) - f0 ), ... );
 
     return result;
   }

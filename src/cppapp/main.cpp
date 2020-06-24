@@ -203,6 +203,59 @@ void smoke_test_quick_descent()
 
     assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
   }
+
+  // test for the two argument function
+  {
+    using my_quick_descent_t = noptim::quick_descent<noptim::find_minimum_method::gold_ratio, double, double, double>;
+
+    using my_funct_ret_t = my_quick_descent_t::funct_ret_t;
+    using my_funct_args_t = my_quick_descent_t::funct_args_t;
+    using my_funct_gradient_t = my_quick_descent_t::funct_gradient_t;
+
+    constexpr auto const x0 = 2.0;
+    constexpr auto const y0 = 5.0;
+
+    auto my_f = [] ( my_funct_args_t const & x )->my_funct_ret_t
+    {
+      return ( ( std::get<0> ( x ) - x0 ) * ( std::get<0> ( x ) - x0 )
+               + ( std::get<1> ( x ) - y0 ) * ( std::get<1> ( x ) - y0 )
+               + 10.0 );
+    };
+
+    constexpr auto const h = 0.01;
+
+    auto const xa = 0.0;
+    auto const xb = 6.0;
+    auto const ya = 0.0;
+    auto const yb = 6.0;
+    auto const eps = 0.01;
+
+    my_funct_args_t const min_point = {xa, ya};
+    my_funct_args_t const max_point = {xb, yb};
+
+    my_funct_args_t const step_point_x = {xa + h, ya};
+    my_funct_args_t const step_point_y = {xa, ya + h};
+
+
+    my_funct_args_t const expected_x_min = { x0, y0};
+
+    my_quick_descent_t qd ( h, eps,
+                            min_point, max_point,
+                            my_f );
+
+    my_funct_gradient_t const gr0 = qd.get_gradient ( min_point );
+    my_funct_gradient_t const expected_gr0 =
+    {
+      my_f ( step_point_x ) - my_f ( min_point ),
+      my_f ( step_point_y ) - my_f ( min_point )
+    };
+
+    assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
+
+    my_funct_args_t const x_min = qd.find_minimum();
+
+    assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
+  }
 }
 
 int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
