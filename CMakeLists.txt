@@ -22,6 +22,10 @@ add_executable (NeuroEngine_cpp
 				include/noptim/extreme.h
 				src/noptim/quick_descent.cpp
 				include/noptim/quick_descent.h
+				src/cppapp/smoke_test_neuron.cpp
+				include/cppapp/smoke_test_neuron.h
+				src/cppapp/smoke_test_find_minimum.cpp
+				include/cppapp/smoke_test_find_minimum.h
 				)
 
 target_link_libraries ( NeuroEngine_cpp
