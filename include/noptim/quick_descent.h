@@ -78,14 +78,14 @@ struct quick_descent
     return get_gradient_impl ( args, std::make_index_sequence<quick_descent::funct_args_count>() );
   }
 
-  funct_args_t find_minimum () const
+  funct_args_t find_minimum ( noptim::find_minimum_t* statistics = nullptr ) const
   {
-    return find_minimum_impl ( std::make_index_sequence<quick_descent::funct_args_count>() );
+    return find_minimum_impl ( statistics, std::make_index_sequence<quick_descent::funct_args_count>() );
   }
 
 private:
   template<size_t Index>
-  funct_args_t find_partial_minimum ( funct_args_t const& args ) const
+  funct_args_t find_partial_minimum ( noptim::find_minimum_t* statistics, funct_args_t const& args ) const
   {
     funct_args_t work_point{args};
 
@@ -99,17 +99,17 @@ private:
                                        std::get<Index> ( min_point ),
                                        std::get<Index> ( max_point ), eps,
                                        partial_function,
-                                       nullptr );
+                                       statistics );
 
     return work_point;
   }
 
   template<size_t ... Indexes>
-  funct_args_t find_minimum_impl ( std::integer_sequence<size_t, Indexes...> ) const
+  funct_args_t find_minimum_impl ( noptim::find_minimum_t* statistics, std::integer_sequence<size_t, Indexes...> ) const
   {
     funct_args_t work_point{min_point};
 
-    ( ( work_point = find_partial_minimum<Indexes> ( work_point ) ), ... );
+    ( ( work_point = find_partial_minimum<Indexes> ( statistics, work_point ) ), ... );
 
     return work_point;
   }

@@ -26,6 +26,7 @@ void smoke_test_find_minimum_dichotomie()
       noptim::find_minimum<noptim::find_minimum_method::dichotomie> ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
+    assert ( 21 == stat.funct_invocation_count );
   }
 
   {
@@ -47,6 +48,7 @@ void smoke_test_find_minimum_dichotomie()
       noptim::find_minimum<noptim::find_minimum_method::dichotomie> ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
+    assert ( 23 == stat.funct_invocation_count );
   }
 }
 
@@ -70,6 +72,7 @@ void smoke_test_find_minimum_gold_ratio()
       noptim::find_minimum<noptim::find_minimum_method::gold_ratio> ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
+    assert ( 14 == stat.funct_invocation_count );
   }
 
   {
@@ -91,6 +94,7 @@ void smoke_test_find_minimum_gold_ratio()
       noptim::find_minimum<noptim::find_minimum_method::gold_ratio> ( xa, xb, eps, my_f, &stat );
 
     assert ( fabs ( x_min - expected_x_min ) <= eps );
+    assert ( 17 == stat.funct_invocation_count );
   }
 }
 
@@ -135,9 +139,11 @@ void smoke_test_quick_descent()
 
     assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
 
-    my_funct_args_t const x_min = qd.find_minimum();
+    noptim::find_minimum_t stat;
+    my_funct_args_t const x_min = qd.find_minimum ( &stat );
 
     assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
+    assert ( 17 == stat.funct_invocation_count );
   }
 
   // test for the two argument function
@@ -188,8 +194,10 @@ void smoke_test_quick_descent()
 
     assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
 
-    my_funct_args_t const x_min = qd.find_minimum();
+    noptim::find_minimum_t stat;
+    my_funct_args_t const x_min = qd.find_minimum ( &stat );
 
     assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
+    assert ( 32 == stat.funct_invocation_count );
   }
 }

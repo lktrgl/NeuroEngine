@@ -192,7 +192,7 @@ template <find_minimum_method METHOD_ENUM,
 T find_minimum ( T const xa, T const xb,
                  T const eps,
                  LOSS_FUNCTION_T& funct,
-                 find_minimum_t* statistics )
+                 find_minimum_t* statistics = nullptr )
 {
   return find_minimum_details::find_minimum_traits<T, METHOD_ENUM>::method ( xa, xb, eps, funct, statistics );
 }
