@@ -4,6 +4,7 @@
 #include <functional>
 #include <tuple>
 #include <array>
+#include <cmath>
 
 namespace diffsolve
 {
@@ -50,7 +51,7 @@ RET_TYPE get_normus_impl ( T const& a, std::index_sequence<Indexes...> )
 
   ( ( result += std::get<Indexes> ( a ) * std::get<Indexes> ( a ) ), ... );
 
-  return result;
+  return sqrt ( result );
 }
 
 template<diffsolve_method METHOD_ENUM,
@@ -137,11 +138,9 @@ struct diffsolve
   using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, system_rank>;
 
   diffsolve ( funct_arg_t const& step,
-              funct_arg_t const& eps,
               funct_args_t const& min_point,
               target_function_array_t const& funct )
     : step ( step )
-    , eps ( eps )
     , min_point ( min_point )
     , funct ( funct )
 
@@ -153,11 +152,38 @@ struct diffsolve
   funct_args_t evaluate_delta ( funct_arg_t t,
                                 funct_args_t const& y ) const
   {
-    return diffsolve_details::diffsolve_traits<METHOD_ENUM, SYSTEM_RANK, FUNCT_ARG, ARGS...>::evaluate_delta ( funct,
-           t, y, step );
+    constexpr auto const evaluate_delta_funct_ptr =
+      diffsolve_details::diffsolve_traits<METHOD_ENUM, SYSTEM_RANK, FUNCT_ARG, ARGS...>::evaluate_delta;
+
+    return  evaluate_delta_funct_ptr ( funct, t, y, step );
+  }
+
+  funct_args_t integrate_from_too ( funct_arg_t const t0,
+                                    funct_arg_t const t1,
+                                    funct_args_t const& y0 ) const
+  {
+    return integrate_from_too_impl ( t0, t1, y0, std::make_index_sequence<sizeof... ( ARGS ) >() );
   }
 
 private:
+
+  template<size_t ... Indexes>
+  funct_args_t integrate_from_too_impl ( funct_arg_t const t0,
+                                         funct_arg_t const t1,
+                                         funct_args_t const& y0,
+                                         std::index_sequence<Indexes...> ) const
+  {
+    auto result = y0;
+
+    for ( auto t = t0; t < t1; t += step )
+    {
+      auto const delta = evaluate_delta ( t, result );
+      ( ( std::get<Indexes> ( result ) += std::get<Indexes> ( delta ) ), ... );
+    }
+
+    return result;
+  }
+
   //  solution_values_array_t evaluate_delta1 ( target_function_array_t const& f,
   //      funct_arg_t t,
   //      solution_values_array_t const& y,
@@ -208,7 +234,6 @@ private:
 
 private:
   funct_arg_t const step;
-  funct_arg_t const eps;
   funct_args_t const min_point;
   target_function_array_t const funct;
 };

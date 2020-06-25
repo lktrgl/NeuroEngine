@@ -6,6 +6,7 @@
 #include <tuple>
 #include <functional>
 #include <type_traits>
+#include <cmath>
 
 namespace noptim
 {
@@ -37,7 +38,7 @@ RET_TYPE get_normus_impl ( T const& a, std::index_sequence<Indexes...> )
 
   ( ( result += std::get<Indexes> ( a ) * std::get<Indexes> ( a ) ), ... );
 
-  return result;
+  return sqrt ( result );
 }
 
 }  // namespace quick_descent_details

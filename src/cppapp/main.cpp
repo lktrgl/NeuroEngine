@@ -14,7 +14,7 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 
   smoke_test_quick_descent();
 
-  smoke_test_runge_kutta();
+  smoke_test_euler();
 
   smoke_test_runge_kutta_felberga();
 
