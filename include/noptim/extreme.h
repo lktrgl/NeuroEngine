@@ -42,8 +42,6 @@ template <typename T>
 using target_function_t = std::function<T ( T ) >;
 
 
-
-
 template<typename T, find_minimum_method METHOD_ENUM>
 struct find_minimum_traits;
 

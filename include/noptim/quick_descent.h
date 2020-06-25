@@ -18,7 +18,7 @@ template<typename ... ARGS>
 using funct_args_t = std::tuple<ARGS...>;
 
 template<typename RET_TYPE, typename ... ARGS>
-using funct_t = std::function<RET_TYPE ( funct_args_t<ARGS...> const& ) >;
+using target_function_t = std::function<RET_TYPE ( funct_args_t<ARGS...> const& ) >;
 
 template<typename T, size_t ... Indexes>
 T operator_minus_impl ( T const& a, T const& b, std::index_sequence<Indexes...> )
@@ -51,7 +51,7 @@ struct quick_descent
   using funct_ret_t = RET_TYPE;
   using funct_arg_t = RET_TYPE;
   using funct_args_t = quick_descent_details::funct_args_t<ARGS... >;
-  using funct_t = quick_descent_details::funct_t<funct_ret_t, ARGS... >;
+  using target_function_t = quick_descent_details::target_function_t<funct_ret_t, ARGS... >;
 
   using funct_gradient_t = funct_args_t;
 
@@ -61,7 +61,7 @@ struct quick_descent
                   funct_arg_t const& eps,
                   funct_args_t const& min_point,
                   funct_args_t const& max_point,
-                  funct_t funct )
+                  target_function_t funct )
     : step ( step )
     , eps ( eps )
     , min_point ( min_point )
@@ -155,7 +155,7 @@ private:
   funct_arg_t const eps;
   funct_args_t const min_point;
   funct_args_t const max_point;
-  funct_t funct;
+  target_function_t funct;
 };
 
 

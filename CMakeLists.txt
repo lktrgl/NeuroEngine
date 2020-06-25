@@ -26,6 +26,10 @@ add_executable (NeuroEngine_cpp
 				include/cppapp/smoke_test_neuron.h
 				src/cppapp/smoke_test_find_minimum.cpp
 				include/cppapp/smoke_test_find_minimum.h
+				src/diffsolve/diffsolve.cpp
+				include/diffsolve/diffsolve.h
+				src/cppapp/smoke_test_diffsolve.cpp
+				include/cppapp/smoke_test_diffsolve.h
 				)
 
 target_link_libraries ( NeuroEngine_cpp
