@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utils/tuple_utils.h>
+
 #include <type_traits>
 #include <functional>
 #include <tuple>
@@ -32,26 +34,6 @@ template<typename T>
 constexpr bool always_false()
 {
   return false;
-}
-
-template<typename T, size_t ... Indexes>
-T operator_minus_impl ( T const& a, T const& b, std::index_sequence<Indexes...> )
-{
-  auto result{a};
-
-  ( ( std::get<Indexes> ( result ) -= std::get<Indexes> ( b ) ), ... );
-
-  return result;
-}
-
-template<typename RET_TYPE, typename T, size_t ... Indexes>
-RET_TYPE get_normus_impl ( T const& a, std::index_sequence<Indexes...> )
-{
-  RET_TYPE result{};
-
-  ( ( result += std::get<Indexes> ( a ) * std::get<Indexes> ( a ) ), ... );
-
-  return sqrt ( result );
 }
 
 template<diffsolve_method METHOD_ENUM,
@@ -118,6 +100,63 @@ private:
   }
 };
 
+
+template<size_t SYSTEM_RANK,
+         typename FUNCT_ARG,
+         typename ... ARGS>
+struct diffsolve_traits<diffsolve_method::runge_kutta_4th, SYSTEM_RANK, FUNCT_ARG, ARGS...>
+{
+  using ret_type_t = FUNCT_ARG;
+  using funct_arg_t = FUNCT_ARG;
+  using funct_args_t = diffsolve_details::funct_args_t<ARGS...>;
+  using target_function_t = diffsolve_details::target_function_t<funct_arg_t, ARGS...>;
+  using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
+
+  static funct_args_t
+  evaluate_delta ( target_function_array_t const& f,
+                   funct_arg_t t,
+                   funct_args_t const& y,
+                   funct_arg_t tau )
+  {
+    return evaluate_delta_impl ( f,
+                                 t,
+                                 y,
+                                 tau, std::make_index_sequence<SYSTEM_RANK>() );
+  }
+
+private:
+  template <size_t ... Indexes>
+  static funct_args_t
+  evaluate_delta_impl ( target_function_array_t const& f,
+                        funct_arg_t t,
+                        funct_args_t const& y,
+                        funct_arg_t tau,
+                        std::index_sequence<Indexes...> )
+  {
+    funct_args_t result{};
+
+    ( ( std::get<Indexes> ( result ) = evaluate_partial_delta_impl<Indexes> ( f, t, y, tau ) ), ... );
+
+    return result;
+  }
+
+  template <size_t Index>
+  static funct_arg_t
+  evaluate_partial_delta_impl ( target_function_array_t const& f,
+                                funct_arg_t t,
+                                funct_args_t const& y,
+                                funct_arg_t tau )
+  {
+    using namespace tuple_utils;
+
+    auto const k0 = tau * f[Index] ( t, y );
+    auto const k1 = tau * f[Index] ( t + tau / 2.0, y + ( k0 / 2.0 ) );
+    auto const k2 = tau * f[Index] ( t + tau / 2.0, y + ( k1 / 2.0 ) );
+    auto const k3 = tau * f[Index] ( t + tau, y + k2 );
+
+    return  ( k0 + 2.0 * k1 + 2.0 * k2 + k3 ) / 6.0;
+  }
+};
 } // namespace diffsolve_details
 
 // taken from
@@ -237,15 +276,5 @@ private:
   funct_args_t const min_point;
   target_function_array_t const funct;
 };
-
-template<typename RET_TYPE, typename ... ARGS>
-RET_TYPE get_normus ( std::tuple<ARGS...> const& a, std::tuple<ARGS...> const& b )
-{
-  auto const delta = diffsolve_details::operator_minus_impl ( a, b,
-                     std::make_index_sequence<sizeof... ( ARGS ) >() );
-
-  return diffsolve_details::get_normus_impl<RET_TYPE> ( delta,
-         std::make_index_sequence<sizeof... ( ARGS ) >() );
-}
 
 } // namespace diffsolve

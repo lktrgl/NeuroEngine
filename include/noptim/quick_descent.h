@@ -1,6 +1,7 @@
 #pragma once
 
 #include <noptim/extreme.h>
+#include <utils/tuple_utils.h>
 
 #include <utility>
 #include <tuple>
@@ -20,26 +21,6 @@ using funct_args_t = std::tuple<ARGS...>;
 
 template<typename RET_TYPE, typename ... ARGS>
 using target_function_t = std::function<RET_TYPE ( funct_args_t<ARGS...> const& ) >;
-
-template<typename T, size_t ... Indexes>
-T operator_minus_impl ( T const& a, T const& b, std::index_sequence<Indexes...> )
-{
-  auto result{a};
-
-  ( ( std::get<Indexes> ( result ) -= std::get<Indexes> ( b ) ), ... );
-
-  return result;
-}
-
-template<typename RET_TYPE, typename T, size_t ... Indexes>
-RET_TYPE get_normus_impl ( T const& a, std::index_sequence<Indexes...> )
-{
-  RET_TYPE result{};
-
-  ( ( result += std::get<Indexes> ( a ) * std::get<Indexes> ( a ) ), ... );
-
-  return sqrt ( result );
-}
 
 }  // namespace quick_descent_details
 
@@ -123,14 +104,14 @@ private:
 
     funct_gradient_t result{};
 
-    ( ( std::get<Indexes> ( result ) = funct ( apply_step<Indexes> ( step, args ) ) - f0 ), ... );
+    ( ( std::get<Indexes> ( result ) = funct ( apply_partial_step<Indexes> ( step, args ) ) - f0 ), ... );
 
     return result;
   }
 
   template<size_t Index>
-  funct_args_t apply_step ( funct_arg_t step,
-                            funct_args_t const& args ) const
+  funct_args_t apply_partial_step ( funct_arg_t step,
+                                    funct_args_t const& args ) const
   {
     funct_args_t result{args};
 
@@ -144,9 +125,9 @@ private:
                             funct_args_t const& args,
                             std::integer_sequence<size_t, Indexes...> ) const
   {
-    funct_args_t result{};
+    using namespace tuple_utils;
 
-    ( ( std::get<Indexes> ( result ) = std::get<Indexes> ( args ) + step ), ... );
+    funct_args_t const result = args + step;
 
     return result;
   }
@@ -159,16 +140,6 @@ private:
   target_function_t funct;
 };
 
-
-template<typename RET_TYPE, typename ... ARGS>
-RET_TYPE get_normus ( std::tuple<ARGS...> const& a, std::tuple<ARGS...> const& b )
-{
-  auto const delta = quick_descent_details::operator_minus_impl ( a, b,
-                     std::make_index_sequence<sizeof... ( ARGS ) >() );
-
-  return quick_descent_details::get_normus_impl<RET_TYPE> ( delta,
-         std::make_index_sequence<sizeof... ( ARGS ) >() );
-}
 
 
 } // namespace noptim

@@ -30,6 +30,7 @@ add_executable (NeuroEngine_cpp
 				include/diffsolve/diffsolve.h
 				src/cppapp/smoke_test_diffsolve.cpp
 				include/cppapp/smoke_test_diffsolve.h
+				include/utils/tuple_utils.h
 				)
 
 target_link_libraries ( NeuroEngine_cpp

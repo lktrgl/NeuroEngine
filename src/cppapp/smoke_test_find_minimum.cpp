@@ -3,6 +3,8 @@
 #include <noptim/extreme.h>
 #include <noptim/quick_descent.h>
 
+#include <utils/tuple_utils.h>
+
 #include <cassert>
 #include <cmath>
 
@@ -137,12 +139,12 @@ void smoke_test_quick_descent()
     my_funct_gradient_t const gr0 = qd.get_gradient ( min_point );
     my_funct_gradient_t const expected_gr0 = my_f ( step_point ) - my_f ( min_point );
 
-    assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
+    assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
 
     noptim::find_minimum_t stat;
     my_funct_args_t const x_min = qd.find_minimum ( &stat );
 
-    assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
+    assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
     assert ( 17 == stat.funct_invocation_count );
   }
 
@@ -192,12 +194,12 @@ void smoke_test_quick_descent()
       my_f ( step_point_y ) - my_f ( min_point )
     };
 
-    assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
+    assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
 
     noptim::find_minimum_t stat;
     my_funct_args_t const x_min = qd.find_minimum ( &stat );
 
-    assert ( fabs ( noptim::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
+    assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
     assert ( 32 == stat.funct_invocation_count );
   }
 }
