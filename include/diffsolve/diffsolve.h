@@ -59,7 +59,6 @@ struct diffsolve_traits
   }
 };
 
-
 template<size_t SYSTEM_RANK,
          typename FUNCT_ARG,
          typename ... ARGS>
@@ -99,7 +98,6 @@ private:
     return result;
   }
 };
-
 
 template<size_t SYSTEM_RANK,
          typename FUNCT_ARG,
@@ -150,13 +148,81 @@ private:
     using namespace tuple_utils;
 
     auto const k0 = tau * f[Index] ( t, y );
-    auto const k1 = tau * f[Index] ( t + tau / 2.0, y + ( k0 / 2.0 ) );
-    auto const k2 = tau * f[Index] ( t + tau / 2.0, y + ( k1 / 2.0 ) );
+    auto const k1 = tau * f[Index] ( t + tau / 2.0, y + k0 / 2.0 );
+    auto const k2 = tau * f[Index] ( t + tau / 2.0, y + k1 / 2.0 );
     auto const k3 = tau * f[Index] ( t + tau, y + k2 );
 
     return  ( k0 + 2.0 * k1 + 2.0 * k2 + k3 ) / 6.0;
   }
 };
+
+template<size_t SYSTEM_RANK,
+         typename FUNCT_ARG,
+         typename ... ARGS>
+struct diffsolve_traits<diffsolve_method::runge_kutta_felberga_7th, SYSTEM_RANK, FUNCT_ARG, ARGS...>
+{
+  using ret_type_t = FUNCT_ARG;
+  using funct_arg_t = FUNCT_ARG;
+  using funct_args_t = diffsolve_details::funct_args_t<ARGS...>;
+  using target_function_t = diffsolve_details::target_function_t<funct_arg_t, ARGS...>;
+  using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
+
+  static funct_args_t
+  evaluate_delta ( target_function_array_t const& f,
+                   funct_arg_t t,
+                   funct_args_t const& y,
+                   funct_arg_t tau )
+  {
+    return evaluate_delta_impl ( f,
+                                 t,
+                                 y,
+                                 tau, std::make_index_sequence<SYSTEM_RANK>() );
+  }
+
+private:
+  template <size_t ... Indexes>
+  static funct_args_t
+  evaluate_delta_impl ( target_function_array_t const& f,
+                        funct_arg_t t,
+                        funct_args_t const& y,
+                        funct_arg_t tau,
+                        std::index_sequence<Indexes...> )
+  {
+    funct_args_t result{};
+
+    ( ( std::get<Indexes> ( result ) = evaluate_partial_delta_impl<Indexes> ( f, t, y, tau ) ), ... );
+
+    return result;
+  }
+
+  template <size_t Index>
+  static funct_arg_t
+  evaluate_partial_delta_impl ( target_function_array_t const& f,
+                                funct_arg_t t,
+                                funct_args_t const& y,
+                                funct_arg_t tau )
+  {
+    using namespace tuple_utils;
+
+    auto const k1 = tau * f[Index] ( t, y );
+    auto const k2 = tau * f[Index] ( t + ( 1.0 / 4.0 ) * tau, y + ( 1.0 / 4.0 ) * k1 );
+    auto const k3 = tau * f[Index] ( t + ( 3.0 / 8.0 ) * tau, y + ( 3.0 / 32.0 ) * k1 + ( 9.0 / 32.0 ) * k2 );
+    auto const k4 = tau * f[Index] ( t + ( 12.0 / 13.0 ) * tau,
+                                     y + ( 1932.0 / 2197.0 ) * k1 - ( 7200.0 / 2197.0 ) * k2 + ( 7296.0 / 2197.0 ) * k3 );
+    auto const k5 = tau * f[Index] ( t + tau, y + ( 439.0 / 216.0 ) * k1 - 8.0 * k2 + ( 3680.0 / 513.0 ) * k3 -
+                                     ( 845.0 / 4104.0 ) * k4 );
+    auto const k6 = tau * f[Index] ( t + ( 1.0 / 2.0 ) * tau,
+                                     y - ( 8.0 / 27.0 ) * k1 + 2.0 * k2 - ( 3544.0 / 2565.0 ) * k3 + ( 1859.0 / 4104.0 ) * k4 -
+                                     ( 11.0 / 40.0 ) * k5 );
+
+    return  ( 16.0 / 135.0 ) * k1
+            + ( 6656.0 / 12825.0 ) * k3
+            + ( 28561.0 / 56430.0 ) * k4
+            - ( 9.0 / 50.0 ) * k5
+            + ( 2.0 / 55.0 ) * k6;
+  }
+};
+
 } // namespace diffsolve_details
 
 // taken from
@@ -222,54 +288,6 @@ private:
 
     return result;
   }
-
-  //  solution_values_array_t evaluate_delta1 ( target_function_array_t const& f,
-  //      funct_arg_t t,
-  //      solution_values_array_t const& y,
-  //      funct_arg_t tau )
-  //  {
-  //    if constexpr ( diffsolve_method::euler == METHOD_ENUM )
-  //    {
-  //      return solution_values_array_t
-  //      {
-  //        tau * f ( t, y )
-  //      };
-  //    }
-  //    else if constexpr ( diffsolve_method::runge_kutta_4th == METHOD_ENUM )
-  //    {
-  //      auto const k0 = tau * f ( t, y );
-  //      auto const k1 = tau * f ( t + tau / 2.0, y + k0 / 2.0 );
-  //      auto const k2 = tau * f ( t + tau / 2.0, y + k1 / 2.0 );
-  //      auto const k3 = tau * f ( t + tau, y + k2 );
-  //
-  //      return solution_values_array_t
-  //      {
-  //        ( k0 + 2.0 * k1 + 2.0 * k2 + k3 ) / 6.0
-  //      };
-  //    }
-  //    else if constexpr ( diffsolve_method::runge_kutta_felberga_7th == METHOD_ENUM )
-  //    {
-  //      auto const k1 = tau * f ( t, y );
-  //      auto const k2 = tau * f ( t + ( 1.0 / 4.0 ) * tau, y + ( 1.0 / 4.0 ) * k1 );
-  //      auto const k3 = tau * f ( t + ( 3.0 / 8.0 ) * tau, y + ( 3.0 / 32.0 ) * k1 + ( 9.0 / 32.0 ) * k2 );
-  //      auto const k4 = tau * f ( t + ( 12.0 / 13.0 ) * tau,
-  //                                y + ( 1932.0 / 2197.0 ) * k1 - ( 7200.0 / 2197.0 ) * k2 + ( 7296.0 / 2197.0 ) * k3 );
-  //      auto const k5 = tau * f ( t + tau, y + ( 439.0 / 216.0 ) * k1 - 8.0 * k2 + ( 3680.0 / 513.0 ) * k3 -
-  //                                ( 845.0 / 4104.0 ) * k4 );
-  //      auto const k6 = tau * f ( t + ( 1.0 / 2.0 ) * tau,
-  //                                y - ( 8.0 / 27.0 ) * k1 + 2.0 * k2 - ( 3544.0 / 2565.0 ) * k3 + ( 1859.0 / 4104.0 ) * k4 -
-  //                                ( 11.0 / 40.0 ) * k5 );
-  //
-  //      return solution_values_array_t
-  //      {
-  //        ( 16.0 / 135.0 )* k1
-  //        + ( 6656.0 / 12825.0 )* k3
-  //        + ( 28561.0 / 56430.0 )* k4
-  //        - ( 9.0 / 50.0 )* k5
-  //        + ( 2.0 / 55.0 )* k6
-  //      };
-  //    }
-  //  }
 
 private:
   funct_arg_t const step;

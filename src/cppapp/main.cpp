@@ -18,7 +18,7 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 
   smoke_test_runge_kutta_4th();
 
-  smoke_test_runge_kutta_felberga_5th();
+  smoke_test_runge_kutta_felberga_7th();
 
   return 0;
 }
