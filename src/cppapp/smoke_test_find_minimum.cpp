@@ -11,167 +11,190 @@
 namespace
 {
 
-// smoke test for the noptim::find_minimum_dichotomie<>(.)
+struct test_function_parabola_t
+{
+  double operator() ( double x )
+  {
+    return A * ( x - root_x ) * ( x - root_x ) + d;
+  }
+
+  template<typename ... ARGS>
+  double operator() ( std::tuple<ARGS...> const& x )
+  {
+    return A * ( std::get<0> ( x ) - root_x ) * ( std::get<0> ( x ) - root_x )
+           + B * ( std::get<1> ( x ) - root_y ) * ( std::get<1> ( x ) - root_y )
+           + d;
+  };
+
+  static constexpr auto  A = 3.0;
+  static constexpr auto  B = 4.0;
+  static constexpr auto  d = 10.0;
+  static constexpr auto root_x = 1.0;
+  static constexpr auto root_y = 1.0;
+
+  static constexpr auto const xa = -1.0;
+  static constexpr auto const xb = 2.0;
+  static constexpr auto const ya = 0.0;
+  static constexpr auto const yb = 6.0;
+
+  static constexpr auto const h = 0.01;
+  static constexpr auto const eps = 0.01;
+
+  static constexpr auto const expected_x_min = test_function_parabola_t::root_x;
+  static constexpr auto const expected_y_min = test_function_parabola_t::root_y;
+};
+
+struct test_function_qubic_t
+{
+  double operator() ( double x )
+  {
+    return - ( d * d * x - x * x * x );
+  }
+
+  template<typename ... ARGS>
+  double operator() ( std::tuple<ARGS...> const& x )
+  {
+    return - ( d * d * std::get<0> ( x ) - std::get<0> ( x ) * std::get<0> ( x ) * std::get<0> ( x ) );
+  };
+
+  static constexpr auto const d = 10.0;
+
+  static constexpr auto const xa = 0.;
+  static constexpr auto const xb = test_function_qubic_t::d;
+  static constexpr auto const h = 0.01;
+  static constexpr auto const eps = 0.01;
+
+  static constexpr auto const expected_x_min = test_function_qubic_t::d / sqrt ( 3.0 );
+};
+
+
 template<noptim::find_minimum_method METHOD_ENUM>
 void smoke_test_find_minimum_X ( size_t const iter_count1, size_t const iter_count2 )
 {
   {
-    auto my_f = [] ( double x )->double
-    {
-      return ( x - 1.0 ) * ( x - 1.0 );
-    };
-
-    auto const xa = -1.0;
-    auto const xb = 2.0;
-    auto const eps = 0.01;
-
-    auto const expected_x_min = 1.0;
+    test_function_parabola_t my_f;
 
     noptim::find_minimum_t stat;
     auto const x_min =
-      noptim::find_minimum<METHOD_ENUM> ( xa, xb, eps, my_f, &stat );
+      noptim::find_minimum<METHOD_ENUM> ( my_f.xa, my_f.xb, my_f.eps, my_f, &stat );
 
-    assert ( fabs ( x_min - expected_x_min ) <= eps );
+    assert ( fabs ( x_min - my_f.expected_x_min ) <= my_f.eps );
     assert ( iter_count1 == stat.funct_invocation_count );
   }
 
   {
-    constexpr auto const d = 10.0;
-
-    auto my_f = [] ( double x )->double
-    {
-      return - ( d* d * x - x* x * x );
-    };
-
-    auto const xa = 0.;
-    auto const xb = d;
-    auto const eps = 0.01;
-
-    constexpr auto const expected_x_min = d / sqrt ( 3.0 );
+    test_function_qubic_t my_f;
 
     noptim::find_minimum_t stat;
     auto const x_min =
-      noptim::find_minimum<METHOD_ENUM> ( xa, xb, eps, my_f, &stat );
+      noptim::find_minimum<METHOD_ENUM> ( my_f.xa, my_f.xb, my_f.eps, my_f, &stat );
 
-    assert ( fabs ( x_min - expected_x_min ) <= eps );
+    assert ( fabs ( x_min - my_f.expected_x_min ) <= my_f.eps );
     assert ( iter_count2 == stat.funct_invocation_count );
   }
 }
 
+template<noptim::find_minimum_method METHOD_ENUM>
+void smoke_test_quick_descent_single_argument ( size_t const iter_count )
+{
+  using my_quick_descent_t = noptim::quick_descent<METHOD_ENUM, double, double>;
+
+  using my_funct_ret_t = typename my_quick_descent_t::funct_ret_t;
+  using my_funct_args_t = typename my_quick_descent_t::funct_args_t;
+  using my_funct_gradient_t = typename my_quick_descent_t::funct_gradient_t;
+
+  test_function_qubic_t my_f;
+
+  my_funct_args_t const min_point = {my_f.xa};
+  my_funct_args_t const max_point = {my_f.xb};
+
+  my_funct_args_t const step_point = {my_f.xa + my_f.h};
+
+
+  my_funct_args_t const expected_x_min = { my_f.expected_x_min };
+
+  my_quick_descent_t qd ( my_f.h, my_f.eps,
+                          min_point, max_point,
+                          my_f );
+
+  my_funct_gradient_t const gr0 = qd.get_gradient ( min_point );
+  my_funct_gradient_t const expected_gr0 = my_f ( step_point ) - my_f ( min_point );
+
+  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= my_f.eps );
+
+  noptim::find_minimum_t stat;
+  my_funct_args_t const x_min = qd.find_minimum ( &stat );
+
+  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= my_f.eps );
+  assert ( iter_count == stat.funct_invocation_count );
+}
+
+template<noptim::find_minimum_method METHOD_ENUM>
+void smoke_test_quick_descent_two_argument ( size_t const iter_count )
+{
+  using my_quick_descent_t = noptim::quick_descent<METHOD_ENUM, double, double, double>;
+
+  using my_funct_ret_t = typename my_quick_descent_t::funct_ret_t;
+  using my_funct_args_t = typename my_quick_descent_t::funct_args_t;
+  using my_funct_gradient_t = typename my_quick_descent_t::funct_gradient_t;
+
+  test_function_parabola_t my_f;
+
+  my_funct_args_t const min_point = {my_f.xa, my_f.ya};
+  my_funct_args_t const max_point = {my_f.xb, my_f.yb};
+
+  my_funct_args_t const step_point_x = {my_f.xa + my_f.h, my_f.ya};
+  my_funct_args_t const step_point_y = {my_f.xa, my_f.ya + my_f.h};
+
+
+  my_funct_args_t const expected_x_min = {my_f.expected_x_min, my_f.expected_y_min};
+
+  my_quick_descent_t qd ( my_f.h, my_f.eps,
+                          min_point, max_point,
+                          my_f );
+
+  my_funct_gradient_t const gr0 = qd.get_gradient ( min_point );
+  my_funct_gradient_t const expected_gr0 =
+  {
+    my_f ( step_point_x ) - my_f ( min_point ),
+    my_f ( step_point_y ) - my_f ( min_point )
+  };
+
+  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= my_f.eps );
+
+  noptim::find_minimum_t stat;
+  my_funct_args_t const x_min = qd.find_minimum ( &stat );
+
+  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= my_f.eps );
+  assert ( iter_count == stat.funct_invocation_count );
+}
+
 } // namespace anonymous
 
-// smoke test for the noptim::find_minimum_dichotomie<>(.)
 void smoke_test_find_minimum_dichotomie()
 {
   smoke_test_find_minimum_X<noptim::find_minimum_method::dichotomie> ( 21, 23 );
 }
 
-// smoke test for the noptim::find_minimum_gold_ratio<>(.)
 void smoke_test_find_minimum_gold_ratio()
 {
   smoke_test_find_minimum_X<noptim::find_minimum_method::gold_ratio> ( 14, 17 );
 }
 
-// smoke test for the noptim::quick_descent<> class
-void smoke_test_quick_descent()
+void smoke_test_quick_descent_dichotomie()
 {
   // test for the single argument function
-  {
-    constexpr auto const d = 10.0;
-
-    using my_quick_descent_t = noptim::quick_descent<noptim::find_minimum_method::gold_ratio, double, double>;
-
-    using my_funct_ret_t = my_quick_descent_t::funct_ret_t;
-    using my_funct_args_t = my_quick_descent_t::funct_args_t;
-    using my_funct_gradient_t = my_quick_descent_t::funct_gradient_t;
-
-    auto my_f = [] ( my_funct_args_t const & x )->my_funct_ret_t
-    {
-      return - ( d* d * std::get<0> ( x ) - std::get<0> ( x ) * std::get<0> ( x ) * std::get<0> ( x ) );
-    };
-
-    constexpr auto const h = 0.01;
-
-    auto const xa = 0.0;
-    auto const xb = d;
-    auto const eps = 0.01;
-
-    my_funct_args_t const min_point = {xa};
-    my_funct_args_t const max_point = {xb};
-
-    my_funct_args_t const step_point = {xa + h};
-
-
-    my_funct_args_t const expected_x_min = { d / sqrt ( 3.0 ) };
-
-    my_quick_descent_t qd ( h, eps,
-                            min_point, max_point,
-                            my_f );
-
-    my_funct_gradient_t const gr0 = qd.get_gradient ( min_point );
-    my_funct_gradient_t const expected_gr0 = my_f ( step_point ) - my_f ( min_point );
-
-    assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
-
-    noptim::find_minimum_t stat;
-    my_funct_args_t const x_min = qd.find_minimum ( &stat );
-
-    assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
-    assert ( 17 == stat.funct_invocation_count );
-  }
+  smoke_test_quick_descent_single_argument<noptim::find_minimum_method::dichotomie> ( 23 );
 
   // test for the two argument function
-  {
-    using my_quick_descent_t = noptim::quick_descent<noptim::find_minimum_method::gold_ratio, double, double, double>;
+  smoke_test_quick_descent_two_argument<noptim::find_minimum_method::dichotomie> ( 44 );
+}
 
-    using my_funct_ret_t = my_quick_descent_t::funct_ret_t;
-    using my_funct_args_t = my_quick_descent_t::funct_args_t;
-    using my_funct_gradient_t = my_quick_descent_t::funct_gradient_t;
+void smoke_test_quick_descent_gold_ratio()
+{
+  // test for the single argument function
+  smoke_test_quick_descent_single_argument<noptim::find_minimum_method::gold_ratio> ( 17 );
 
-    constexpr auto const x0 = 2.0;
-    constexpr auto const y0 = 5.0;
-
-    auto my_f = [] ( my_funct_args_t const & x )->my_funct_ret_t
-    {
-      return ( ( std::get<0> ( x ) - x0 ) * ( std::get<0> ( x ) - x0 )
-               + ( std::get<1> ( x ) - y0 ) * ( std::get<1> ( x ) - y0 )
-               + 10.0 );
-    };
-
-    constexpr auto const h = 0.01;
-
-    auto const xa = 0.0;
-    auto const xb = 6.0;
-    auto const ya = 0.0;
-    auto const yb = 6.0;
-    auto const eps = 0.01;
-
-    my_funct_args_t const min_point = {xa, ya};
-    my_funct_args_t const max_point = {xb, yb};
-
-    my_funct_args_t const step_point_x = {xa + h, ya};
-    my_funct_args_t const step_point_y = {xa, ya + h};
-
-
-    my_funct_args_t const expected_x_min = { x0, y0};
-
-    my_quick_descent_t qd ( h, eps,
-                            min_point, max_point,
-                            my_f );
-
-    my_funct_gradient_t const gr0 = qd.get_gradient ( min_point );
-    my_funct_gradient_t const expected_gr0 =
-    {
-      my_f ( step_point_x ) - my_f ( min_point ),
-      my_f ( step_point_y ) - my_f ( min_point )
-    };
-
-    assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( gr0, expected_gr0 ) ) <= eps );
-
-    noptim::find_minimum_t stat;
-    my_funct_args_t const x_min = qd.find_minimum ( &stat );
-
-    assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( x_min, expected_x_min ) ) <= eps );
-    assert ( 32 == stat.funct_invocation_count );
-  }
+  // test for the two argument function
+  smoke_test_quick_descent_two_argument<noptim::find_minimum_method::gold_ratio> ( 30 );
 }

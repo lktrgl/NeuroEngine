@@ -10,9 +10,8 @@
 namespace
 {
 
-constexpr auto const eps = 0.001;
+constexpr auto const g_eps = 0.001;
 
-// test the rank = 1
 template<diffsolve::diffsolve_method METHOD_ENUM, typename ARG_TYPE>
 void smoke_test_X_rank_1 ( ARG_TYPE h_in, ARG_TYPE eps_in )
 {
@@ -71,7 +70,6 @@ void smoke_test_X_rank_1 ( ARG_TYPE h_in, ARG_TYPE eps_in )
   assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( end_value, expected_end_value ) ) < eps );
 }
 
-// test the rank = 2
 template<diffsolve::diffsolve_method METHOD_ENUM, typename ARG_TYPE>
 void smoke_test_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
 {
@@ -147,40 +145,34 @@ void smoke_test_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
 }
 
 
-// test the rank = 1
 void smoke_test_euler_rank_1()
 {
-  smoke_test_X_rank_1<diffsolve::diffsolve_method::euler> ( /*h_in*/0.0001, /*eps_in*/eps );
+  smoke_test_X_rank_1<diffsolve::diffsolve_method::euler> ( /*h_in*/0.0001, /*eps_in*/g_eps );
 }
 
-// test the rank = 2
 void smoke_test_euler_runk_2()
 {
-  smoke_test_X_2<diffsolve::diffsolve_method::euler> ( /*h_in*/0.0000001, /*eps_in*/eps );
+  smoke_test_X_2<diffsolve::diffsolve_method::euler> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
 }
 
-// test the rank = 1
 void smoke_test_rk_4_rank_1()
 {
-  smoke_test_X_rank_1<diffsolve::diffsolve_method::runge_kutta_4th> ( /*h_in*/0.001, /*eps_in*/eps );
+  smoke_test_X_rank_1<diffsolve::diffsolve_method::runge_kutta_4th> ( /*h_in*/0.001, /*eps_in*/g_eps );
 }
 
-// test the rank = 2
 void smoke_test_rk_4_runk_2()
 {
-  smoke_test_X_2<diffsolve::diffsolve_method::runge_kutta_4th> ( /*h_in*/0.0000001, /*eps_in*/eps );
+  smoke_test_X_2<diffsolve::diffsolve_method::runge_kutta_4th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
 }
 
-// test the rank = 1
 void smoke_test_rkf_7_rank_1()
 {
-  smoke_test_X_rank_1<diffsolve::diffsolve_method::runge_kutta_felberga_7th> ( /*h_in*/0.001, /*eps_in*/eps );
+  smoke_test_X_rank_1<diffsolve::diffsolve_method::runge_kutta_felberga_7th> ( /*h_in*/0.001, /*eps_in*/g_eps );
 }
 
-// test the rank = 2
 void smoke_test_rkf_7_runk_2()
 {
-  smoke_test_X_2<diffsolve::diffsolve_method::runge_kutta_felberga_7th> ( /*h_in*/0.0000001, /*eps_in*/eps );
+  smoke_test_X_2<diffsolve::diffsolve_method::runge_kutta_felberga_7th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
 }
 
 } // namespace anonymous

@@ -12,7 +12,9 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 
   smoke_test_find_minimum_gold_ratio();
 
-  smoke_test_quick_descent();
+  smoke_test_quick_descent_dichotomie();
+
+  smoke_test_quick_descent_gold_ratio();
 
   smoke_test_euler();
 

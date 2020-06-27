@@ -6,7 +6,6 @@
 
 #include <cassert>
 
-// smoke test for the nnet::neuron_t<>
 void smoke_test_neuron()
 {
   constexpr size_t input_dimension = 3;
@@ -34,7 +33,6 @@ void smoke_test_neuron()
   assert ( fake_expected_loss == noptim::neuron_loss<input_t> ( neuron, fake_expected_result ) );
 }
 
-// smoke test for the nnet::neuron_line_t<>
 void smoke_test_neuron_line()
 {
   constexpr size_t input_dimension = 3;
