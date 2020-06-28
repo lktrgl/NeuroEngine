@@ -1,6 +1,7 @@
 #include <cppapp/smoke_test_neuron.h>
 #include <cppapp/smoke_test_find_minimum.h>
 #include <cppapp/smoke_test_diffsolve.h>
+#include <cppapp/smoke_test_integral.h>
 
 int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 {
@@ -21,6 +22,8 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
   smoke_test_runge_kutta_4th();
 
   smoke_test_runge_kutta_felberga_7th();
+
+  smoke_test_trapezoid();
 
   return 0;
 }

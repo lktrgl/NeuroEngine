@@ -4,6 +4,8 @@
 #include <type_traits>
 #include <tuple>
 #include <utility>
+#include <functional>
+
 #include <cmath>
 
 namespace tuple_utils
@@ -81,6 +83,16 @@ RET_TYPE get_normus_impl ( TUPLE_TYPE const& a, std::index_sequence<Indexes...> 
 }
 
 }  // namespace tuple_utils_details
+
+
+template<typename ... ARGS>
+using funct_args_t = std::tuple<ARGS...>;
+
+template<typename RET_TYPE, typename ... ARGS>
+using target_function_t = std::function<RET_TYPE ( funct_args_t<ARGS...> const& ) >;
+
+template <typename T, typename ... ARGS>
+using target_nonstationary_function_t = std::function<T ( T, funct_args_t<ARGS...>const& ) >;
 
 template<typename RET_TYPE,
          typename ... ARGS>

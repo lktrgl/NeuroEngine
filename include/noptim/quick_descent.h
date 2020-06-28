@@ -12,18 +12,6 @@
 namespace noptim
 {
 
-namespace quick_descent_details
-{
-
-
-template<typename ... ARGS>
-using funct_args_t = std::tuple<ARGS...>;
-
-template<typename RET_TYPE, typename ... ARGS>
-using target_function_t = std::function<RET_TYPE ( funct_args_t<ARGS...> const& ) >;
-
-}  // namespace quick_descent_details
-
 template<find_minimum_method METHOD_ENUM,
          typename RET_TYPE,
          typename ... ARGS>
@@ -32,8 +20,8 @@ struct quick_descent
   static constexpr auto find_minimum_method = METHOD_ENUM;
   using funct_ret_t = RET_TYPE;
   using funct_arg_t = RET_TYPE;
-  using funct_args_t = quick_descent_details::funct_args_t<ARGS... >;
-  using target_function_t = quick_descent_details::target_function_t<funct_ret_t, ARGS... >;
+  using funct_args_t = tuple_utils::funct_args_t<ARGS... >;
+  using target_function_t = tuple_utils::target_function_t<funct_ret_t, ARGS... >;
 
   using funct_gradient_t = funct_args_t;
 
@@ -50,9 +38,9 @@ struct quick_descent
     , max_point ( max_point )
     , funct ( funct )
   {
-    static_assert ( std::is_arithmetic<funct_ret_t>::value, "RET_TYPE should be an arithmetic type" );
-    static_assert ( std::is_arithmetic<funct_arg_t>::value, "RET_TYPE should be an arithmetic type" );
-    static_assert ( ( std::is_arithmetic<ARGS>::value && ... ), "ARGS should be arithmetic types" );
+    static_assert ( std::is_arithmetic<funct_ret_t>::value, "RET_TYPE should have an arithmetic type" );
+    static_assert ( std::is_arithmetic<funct_arg_t>::value, "RET_TYPE should have an arithmetic type" );
+    static_assert ( ( std::is_arithmetic<ARGS>::value && ... ), "ARGS should have arithmetic types" );
   }
 
   funct_gradient_t get_gradient ( funct_args_t const& args ) const

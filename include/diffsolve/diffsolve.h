@@ -3,7 +3,6 @@
 #include <utils/tuple_utils.h>
 
 #include <type_traits>
-#include <functional>
 #include <tuple>
 #include <array>
 #include <cmath>
@@ -20,12 +19,6 @@ enum class diffsolve_method
 
 namespace diffsolve_details
 {
-
-template<typename ... ARGS>
-using funct_args_t = std::tuple<ARGS...>;
-
-template <typename T, typename ... ARGS>
-using target_function_t = std::function<T ( T, funct_args_t<ARGS...>const& ) >;
 
 template<typename TARGET_FUNCTION, size_t SYSTEM_RANK>
 using target_function_array_t = std::array<TARGET_FUNCTION, SYSTEM_RANK>;
@@ -44,15 +37,15 @@ struct diffsolve_traits
 {
   using ret_type_t = FUNCT_ARG;
   using funct_arg_t = FUNCT_ARG;
-  using funct_args_t = diffsolve_details::funct_args_t<ARGS...>;
-  using target_function_t = diffsolve_details::target_function_t<funct_arg_t, ARGS...>;
+  using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
+  using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
   using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
 
   static funct_args_t
-  evaluate_delta ( target_function_array_t const& f,
-                   funct_arg_t t,
-                   funct_args_t const& y,
-                   funct_arg_t tau )
+  evaluate_gradient ( target_function_array_t const& f,
+                      funct_arg_t t,
+                      funct_args_t const& y,
+                      funct_arg_t tau )
   {
     static_assert ( always_false<FUNCT_ARG>(), "A specialization should be implemented instead !" );
     return {};
@@ -66,30 +59,30 @@ struct diffsolve_traits<diffsolve_method::euler, SYSTEM_RANK, FUNCT_ARG, ARGS...
 {
   using ret_type_t = FUNCT_ARG;
   using funct_arg_t = FUNCT_ARG;
-  using funct_args_t = diffsolve_details::funct_args_t<ARGS...>;
-  using target_function_t = diffsolve_details::target_function_t<funct_arg_t, ARGS...>;
+  using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
+  using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
   using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
 
   static funct_args_t
-  evaluate_delta ( target_function_array_t const& f,
-                   funct_arg_t t,
-                   funct_args_t const& y,
-                   funct_arg_t tau )
+  evaluate_gradient ( target_function_array_t const& f,
+                      funct_arg_t t,
+                      funct_args_t const& y,
+                      funct_arg_t tau )
   {
-    return evaluate_delta_impl ( f,
-                                 t,
-                                 y,
-                                 tau, std::make_index_sequence<SYSTEM_RANK>() );
+    return evaluate_gradient_impl ( f,
+                                    t,
+                                    y,
+                                    tau, std::make_index_sequence<SYSTEM_RANK>() );
   }
 
 private:
   template <size_t ... Indexes>
   static funct_args_t
-  evaluate_delta_impl ( target_function_array_t const& f,
-                        funct_arg_t t,
-                        funct_args_t const& y,
-                        funct_arg_t tau,
-                        std::index_sequence<Indexes...> )
+  evaluate_gradient_impl ( target_function_array_t const& f,
+                           funct_arg_t t,
+                           funct_args_t const& y,
+                           funct_arg_t tau,
+                           std::index_sequence<Indexes...> )
   {
     funct_args_t result{};
 
@@ -106,30 +99,30 @@ struct diffsolve_traits<diffsolve_method::runge_kutta_4th, SYSTEM_RANK, FUNCT_AR
 {
   using ret_type_t = FUNCT_ARG;
   using funct_arg_t = FUNCT_ARG;
-  using funct_args_t = diffsolve_details::funct_args_t<ARGS...>;
-  using target_function_t = diffsolve_details::target_function_t<funct_arg_t, ARGS...>;
+  using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
+  using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
   using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
 
   static funct_args_t
-  evaluate_delta ( target_function_array_t const& f,
-                   funct_arg_t t,
-                   funct_args_t const& y,
-                   funct_arg_t tau )
+  evaluate_gradient ( target_function_array_t const& f,
+                      funct_arg_t t,
+                      funct_args_t const& y,
+                      funct_arg_t tau )
   {
-    return evaluate_delta_impl ( f,
-                                 t,
-                                 y,
-                                 tau, std::make_index_sequence<SYSTEM_RANK>() );
+    return evaluate_gradient_impl ( f,
+                                    t,
+                                    y,
+                                    tau, std::make_index_sequence<SYSTEM_RANK>() );
   }
 
 private:
   template <size_t ... Indexes>
   static funct_args_t
-  evaluate_delta_impl ( target_function_array_t const& f,
-                        funct_arg_t t,
-                        funct_args_t const& y,
-                        funct_arg_t tau,
-                        std::index_sequence<Indexes...> )
+  evaluate_gradient_impl ( target_function_array_t const& f,
+                           funct_arg_t t,
+                           funct_args_t const& y,
+                           funct_arg_t tau,
+                           std::index_sequence<Indexes...> )
   {
     funct_args_t result{};
 
@@ -163,30 +156,30 @@ struct diffsolve_traits<diffsolve_method::runge_kutta_felberga_7th, SYSTEM_RANK,
 {
   using ret_type_t = FUNCT_ARG;
   using funct_arg_t = FUNCT_ARG;
-  using funct_args_t = diffsolve_details::funct_args_t<ARGS...>;
-  using target_function_t = diffsolve_details::target_function_t<funct_arg_t, ARGS...>;
+  using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
+  using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
   using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
 
   static funct_args_t
-  evaluate_delta ( target_function_array_t const& f,
-                   funct_arg_t t,
-                   funct_args_t const& y,
-                   funct_arg_t tau )
+  evaluate_gradient ( target_function_array_t const& f,
+                      funct_arg_t t,
+                      funct_args_t const& y,
+                      funct_arg_t tau )
   {
-    return evaluate_delta_impl ( f,
-                                 t,
-                                 y,
-                                 tau, std::make_index_sequence<SYSTEM_RANK>() );
+    return evaluate_gradient_impl ( f,
+                                    t,
+                                    y,
+                                    tau, std::make_index_sequence<SYSTEM_RANK>() );
   }
 
 private:
   template <size_t ... Indexes>
   static funct_args_t
-  evaluate_delta_impl ( target_function_array_t const& f,
-                        funct_arg_t t,
-                        funct_args_t const& y,
-                        funct_arg_t tau,
-                        std::index_sequence<Indexes...> )
+  evaluate_gradient_impl ( target_function_array_t const& f,
+                           funct_arg_t t,
+                           funct_args_t const& y,
+                           funct_arg_t tau,
+                           std::index_sequence<Indexes...> )
   {
     funct_args_t result{};
 
@@ -237,9 +230,9 @@ struct diffsolve
 
   using ret_type_t = FUNCT_ARG;
   using funct_arg_t = FUNCT_ARG;
-  using funct_args_t = diffsolve_details::funct_args_t<ARGS...>;
+  using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
 
-  using target_function_t = diffsolve_details::target_function_t<funct_arg_t, ARGS...>;
+  using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
   using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, system_rank>;
 
   diffsolve ( funct_arg_t const& step,
@@ -254,35 +247,35 @@ struct diffsolve
     static_assert ( ( std::is_arithmetic<ARGS>::value && ... ), "ARGS should be arithmetic types" );
   }
 
-  funct_args_t evaluate_delta ( funct_arg_t t,
-                                funct_args_t const& y ) const
+  funct_args_t evaluate_gradient ( funct_arg_t t,
+                                   funct_args_t const& y ) const
   {
-    constexpr auto const evaluate_delta_funct_ptr =
-      diffsolve_details::diffsolve_traits<METHOD_ENUM, SYSTEM_RANK, FUNCT_ARG, ARGS...>::evaluate_delta;
+    constexpr auto const evaluate_gradient_funct_ptr =
+      diffsolve_details::diffsolve_traits<METHOD_ENUM, SYSTEM_RANK, FUNCT_ARG, ARGS...>::evaluate_gradient;
 
-    return  evaluate_delta_funct_ptr ( funct, t, y, step );
+    return  evaluate_gradient_funct_ptr ( funct, t, y, step );
   }
 
-  funct_args_t integrate_from_too ( funct_arg_t const t0,
-                                    funct_arg_t const t1,
-                                    funct_args_t const& y0 ) const
+  funct_args_t from_too ( funct_arg_t const t0,
+                          funct_arg_t const t1,
+                          funct_args_t const& y0 ) const
   {
-    return integrate_from_too_impl ( t0, t1, y0, std::make_index_sequence<sizeof... ( ARGS ) >() );
+    return from_too_impl ( t0, t1, y0, std::make_index_sequence<sizeof... ( ARGS ) >() );
   }
 
 private:
 
   template<size_t ... Indexes>
-  funct_args_t integrate_from_too_impl ( funct_arg_t const t0,
-                                         funct_arg_t const t1,
-                                         funct_args_t const& y0,
-                                         std::index_sequence<Indexes...> ) const
+  funct_args_t from_too_impl ( funct_arg_t const t0,
+                               funct_arg_t const t1,
+                               funct_args_t const& y0,
+                               std::index_sequence<Indexes...> ) const
   {
     auto result = y0;
 
     for ( auto t = t0; t < t1; t += step )
     {
-      auto const delta = evaluate_delta ( t, result );
+      auto const delta = evaluate_gradient ( t, result );
       ( ( std::get<Indexes> ( result ) += std::get<Indexes> ( delta ) ), ... );
     }
 

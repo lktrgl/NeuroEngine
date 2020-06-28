@@ -57,13 +57,13 @@ void smoke_test_X_rank_1 ( ARG_TYPE h_in, ARG_TYPE eps_in )
                       y0,
                       funct );
 
-  my_funct_args_t const delta_value =  ds.evaluate_delta ( t0, y0 );
+  my_funct_args_t const gradient_value =  ds.evaluate_gradient ( t0, y0 );
 
-  my_funct_args_t const expected_delta_value = { h* funct[0] ( t0, y0 ) };
+  my_funct_args_t const expected_gradient_value = { h* funct[0] ( t0, y0 ) };
 
-  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( delta_value, expected_delta_value ) ) < eps );
+  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( gradient_value, expected_gradient_value ) ) < eps );
 
-  my_funct_args_t const end_value = ds.integrate_from_too ( t0, t1, y0 );
+  my_funct_args_t const end_value = ds.from_too ( t0, t1, y0 );
 
   my_funct_args_t const expected_end_value = { A * exp ( a * t1 ) };
 
@@ -123,17 +123,17 @@ void smoke_test_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
                       y0,
                       funct );
 
-  my_funct_args_t const delta_value =  ds.evaluate_delta ( t0, y0 );
+  my_funct_args_t const gradient_value =  ds.evaluate_gradient ( t0, y0 );
 
-  my_funct_args_t const expected_delta_value =
+  my_funct_args_t const expected_gradient_value =
   {
     h* funct[0] ( t0, y0 ),
     h* funct[1] ( t0, y0 )
   };
 
-  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( delta_value, expected_delta_value ) ) < eps );
+  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( gradient_value, expected_gradient_value ) ) < eps );
 
-  my_funct_args_t const end_value = ds.integrate_from_too ( t0, t1, y0 );
+  my_funct_args_t const end_value = ds.from_too ( t0, t1, y0 );
 
   my_funct_args_t const expected_end_value =
   {
