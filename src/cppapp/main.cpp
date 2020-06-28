@@ -23,6 +23,8 @@ int main ( [[maybe_unused]]int argc, [[maybe_unused]]char* argv[] )
 
   smoke_test_runge_kutta_felberga_7th();
 
+  smoke_test_rectangle();
+
   smoke_test_trapezoid();
 
   return 0;

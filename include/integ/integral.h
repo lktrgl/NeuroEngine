@@ -55,6 +55,34 @@ struct integral_traits
 
 template<typename RET_TYPE,
          typename ARG_TYPE>
+struct integral_traits<integral_method::rectangle,
+         RET_TYPE,
+         ARG_TYPE,
+         target_funct_t<RET_TYPE, ARG_TYPE>>
+{
+  static RET_TYPE method ( ARG_TYPE const from, ARG_TYPE const to, ARG_TYPE const step,
+                           target_funct_t<RET_TYPE, ARG_TYPE> funct )
+  {
+    auto const fa = funct ( from );
+    auto const fb = funct ( to );
+
+    RET_TYPE result{};
+
+    for ( auto t = from + step; t < to; t += step )
+    {
+      result += funct ( t );
+    }
+
+    result = result + fa + fb;
+
+    result *= step;
+
+    return result;
+  }
+};
+
+template<typename RET_TYPE,
+         typename ARG_TYPE>
 struct integral_traits<integral_method::trapezoid,
          RET_TYPE,
          ARG_TYPE,

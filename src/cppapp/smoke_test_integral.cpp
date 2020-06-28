@@ -44,7 +44,12 @@ void smoke_test_X ( ARG_TYPE const h_in, ARG_TYPE const eps_in )
 
 } // namespace anonymous
 
+void smoke_test_rectangle()
+{
+  smoke_test_X<integral::integral_method::rectangle, double, double> ( 0.1, 0.001 );
+}
+
 void smoke_test_trapezoid()
 {
-  smoke_test_X<integral::integral_method::trapezoid, double, double> ( 0.001, 0.001 );
+  smoke_test_X<integral::integral_method::trapezoid, double, double> ( 0.1, 0.001 );
 }
