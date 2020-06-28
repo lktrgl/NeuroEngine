@@ -11,8 +11,7 @@ namespace integral
 enum class integral_method
 {
   rectangle,
-  trapezoid,
-  simpson
+  trapezoid
 };
 
 namespace integral_details

@@ -5,8 +5,6 @@
 #include <cassert>
 #include <cmath>
 
-#include <lggm/lggm.h>
-
 namespace
 {
 
@@ -34,10 +32,6 @@ void smoke_test_X ( ARG_TYPE const h_in, ARG_TYPE const eps_in )
   my_integral integr ( h, my_funct );
 
   my_ret_type_t const integral_value = integr.from_to ( a, b );
-
-  LGGM_PS ( integral_value );
-  LGGM_PS ( expected_integral_value );
-  LGGM_PS ( integral_value - expected_integral_value );
 
   assert ( fabs ( integral_value - expected_integral_value ) < eps );
 }
