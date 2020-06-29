@@ -71,7 +71,7 @@ void smoke_test_X_rank_1 ( ARG_TYPE h_in, ARG_TYPE eps_in )
 }
 
 template<diffsolve::diffsolve_method METHOD_ENUM, typename ARG_TYPE>
-void smoke_test_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
+void smoke_test_conservative_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
 {
   constexpr size_t const system_rank = 2;
   using my_diffsolve_t = diffsolve::diffsolve <
@@ -93,8 +93,8 @@ void smoke_test_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
   //
   // t E [t0,t1]
   //
-  my_funct_arg_t const t0 = 0.0;
-  my_funct_arg_t const t1 = 2.0;
+  constexpr auto const t0 = 0.0;
+  constexpr auto const t1 = 2.0;
   constexpr auto const w = 3.0;
   constexpr auto const A = 100.0;
   constexpr auto const fi = M_PI / 3.0;
@@ -145,6 +145,74 @@ void smoke_test_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
 }
 
 
+template<diffsolve::diffsolve_method METHOD_ENUM, typename ARG_TYPE>
+void smoke_test_2nd_degree_system_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
+{
+  constexpr size_t const system_rank = 2;
+  using my_diffsolve_t = diffsolve::diffsolve <
+                         METHOD_ENUM,
+                         system_rank,
+                         ARG_TYPE,
+                         ARG_TYPE, ARG_TYPE >;
+
+  using my_funct_ret_t = typename my_diffsolve_t::ret_type_t;
+  using my_funct_arg_t = typename my_diffsolve_t::funct_arg_t;
+  using my_funct_args_t = typename my_diffsolve_t::funct_args_t;
+  using my_target_function_array_t = typename my_diffsolve_t::target_function_array_t;
+
+  constexpr auto const t0 = 0.0;
+  constexpr auto const t1 = 4.0;
+  constexpr auto const T = 0.09;
+  constexpr auto const mju = 1.2;
+  constexpr auto const k = 1.0;
+
+  constexpr auto const A = 1.0;
+  constexpr auto const tImp = ( t1 - t0 ) / 2.0;
+
+  my_funct_args_t const y0{};
+
+  auto my_xin = [] ( [[maybe_unused]]my_funct_arg_t t )->my_funct_ret_t
+  {
+    my_funct_ret_t result{};
+
+    if ( t >= t0 and t <= t0 + tImp )
+    {
+      result = A;
+    }
+
+    return result;
+  };
+
+  auto my_f1 = [] ( [[maybe_unused]]my_funct_arg_t t, [[maybe_unused]]my_funct_args_t const & x )->my_funct_ret_t
+  {
+    return std::get<1> ( x );
+  };
+
+  auto my_f2 = [&my_xin] ( [[maybe_unused]]my_funct_arg_t t, [[maybe_unused]]my_funct_args_t const & x )->my_funct_ret_t
+  {
+    return -mju / T * std::get<1> ( x ) - 1.0 / ( T * T ) * std::get<0> ( x ) + k / ( T * T ) * my_xin ( t );
+  };
+
+  my_target_function_array_t const funct =
+  {
+    my_f1,
+    my_f2
+  };
+
+  my_funct_arg_t const h = h_in;
+  my_funct_arg_t const eps = eps_in;
+
+  my_diffsolve_t ds ( h,
+                      y0,
+                      funct );
+
+  my_funct_args_t const end_value = ds.from_too ( t0, t1, y0 );
+
+  my_funct_args_t const expected_end_value = {};
+
+  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( end_value, expected_end_value ) ) < eps );
+}
+
 void smoke_test_euler_rank_1()
 {
   smoke_test_X_rank_1<diffsolve::diffsolve_method::euler> ( /*h_in*/0.0001, /*eps_in*/g_eps );
@@ -152,7 +220,9 @@ void smoke_test_euler_rank_1()
 
 void smoke_test_euler_runk_2()
 {
-  smoke_test_X_2<diffsolve::diffsolve_method::euler> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
+  smoke_test_conservative_X_2<diffsolve::diffsolve_method::euler> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
+
+  smoke_test_2nd_degree_system_X_2<diffsolve::diffsolve_method::euler> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
 }
 
 void smoke_test_rk_4_rank_1()
@@ -162,7 +232,9 @@ void smoke_test_rk_4_rank_1()
 
 void smoke_test_rk_4_runk_2()
 {
-  smoke_test_X_2<diffsolve::diffsolve_method::runge_kutta_4th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
+  smoke_test_conservative_X_2<diffsolve::diffsolve_method::runge_kutta_4th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
+
+  smoke_test_2nd_degree_system_X_2<diffsolve::diffsolve_method::runge_kutta_4th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
 }
 
 void smoke_test_rkf_7_rank_1()
@@ -172,7 +244,9 @@ void smoke_test_rkf_7_rank_1()
 
 void smoke_test_rkf_7_runk_2()
 {
-  smoke_test_X_2<diffsolve::diffsolve_method::runge_kutta_felberga_7th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
+  smoke_test_conservative_X_2<diffsolve::diffsolve_method::runge_kutta_felberga_7th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
+
+  smoke_test_2nd_degree_system_X_2<diffsolve::diffsolve_method::runge_kutta_felberga_7th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
 }
 
 } // namespace anonymous
