@@ -1,5 +1,7 @@
 clear all
 
+##----------------- Global declarations ----------------------------------------
+
 global t0=0;
 global t1=4;
 NumP=100;
@@ -10,6 +12,8 @@ global T=0.09;
 global mju=1.2;
 global k=1;
 
+##---------------- Distortion --------------------------------------------------
+
 function y=xin(t)
   global t0;
   global A;
@@ -19,7 +23,9 @@ function y=xin(t)
 
 endfunction
 
-function xdot = bruss (y, t)
+##----------------- Right Part -------------------------------------------------
+
+function xdot = SYSTEM (y, t)
   global mju;
   global T;
   global k;
@@ -30,22 +36,28 @@ function xdot = bruss (y, t)
 
 endfunction 
 
+##---------------- Solving -----------------------------------------------------
+
+
 t = linspace (t0, t1, NumP);
-sol = lsode ("bruss", [0,0], t); 
+sol = lsode ("SYSTEM", [0,0], t); 
 sol_coord=sol(:,1);
 xinput = xin(t);
+sol_mistake=sol_coord - xinput';
+
+##---------------- Figure 1 ----------------------------------------------------
 
 figure(1);
-plot( t, sol_coord,"-",t, xinput)
+plot( t, sol_coord,"r",t, xinput,"b")
 title ("Transition process h(t) vs input(t)");
 ylabel ("h(t)");
 xlabel ("t");
 
-sol_mistake=sol_coord - xinput';
+##---------------- Figure 2 ----------------------------------------------------
 
 figure(2);
-plot( t, sol_mistake,t, xinput)
-title ("Transition error");
+plot( t, sol_mistake,"m",t, xinput,"b")
+title ("Transition error vs input(t)");
 ylabel ("h(t) - input(t)");
 xlabel ("t");
 
