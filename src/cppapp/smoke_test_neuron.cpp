@@ -6,6 +6,9 @@
 
 #include <cassert>
 
+namespace
+{
+
 void smoke_test_neuron()
 {
   constexpr size_t input_dimension = 3;
@@ -65,4 +68,13 @@ void smoke_test_neuron_line()
 
   assert ( expected_loss == noptim::neuron_line_loss<input_t> ( neuron_line, expected_results ) );
   assert ( fake_expected_loss == noptim::neuron_line_loss<input_t> ( neuron_line, fake_expected_results ) );
+}
+
+} //namespace anonymous
+
+void test_neuron()
+{
+  smoke_test_neuron();
+
+  smoke_test_neuron_line();
 }

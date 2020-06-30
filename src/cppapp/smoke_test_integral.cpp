@@ -38,8 +38,6 @@ void smoke_test_X ( ARG_TYPE const h_in, ARG_TYPE const eps_in )
   assert ( fabs ( integral_value - expected_integral_value ) < eps );
 }
 
-} // namespace anonymous
-
 void smoke_test_rectangle()
 {
   smoke_test_X<integral::integral_method::rectangle, double, double> ( 0.0006, 0.001 );
@@ -48,4 +46,13 @@ void smoke_test_rectangle()
 void smoke_test_trapezoid()
 {
   smoke_test_X<integral::integral_method::trapezoid, double, double> ( 0.1, 0.001 );
+}
+
+} // namespace anonymous
+
+void test_integral()
+{
+  smoke_test_rectangle();
+
+  smoke_test_trapezoid();
 }

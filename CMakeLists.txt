@@ -21,17 +21,25 @@ add_executable (NeuroEngine_cpp
 				include/noptim/metrics.h
 				include/noptim/extreme.h
 				include/noptim/quick_descent.h
+
+				src/cppapp/smoke_test_all.cpp
+				include/cppapp/smoke_test_all.h
+
 				src/cppapp/smoke_test_neuron.cpp
 				include/cppapp/smoke_test_neuron.h
 				src/cppapp/smoke_test_find_minimum.cpp
 				include/cppapp/smoke_test_find_minimum.h
+				src/cppapp/smoke_test_quick_descent.cpp
+				include/cppapp/smoke_test_quick_descent.h
 				include/diffsolve/diffsolve.h
 				src/cppapp/smoke_test_diffsolve.cpp
 				include/cppapp/smoke_test_diffsolve.h
-				include/utils/tuple_utils.h
 				include/integ/integral.h
 				src/cppapp/smoke_test_integral.cpp
 				include/cppapp/smoke_test_integral.h
+
+				include/utils/tuple_utils.h
+				include/utils/target_functions.h
 				)
 
 target_link_libraries ( NeuroEngine_cpp

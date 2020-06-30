@@ -1,5 +1,4 @@
 #pragma once
 
-void smoke_test_rectangle();
-void smoke_test_trapezoid();
+void test_integral();
 

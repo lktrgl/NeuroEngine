@@ -169,44 +169,41 @@ void smoke_test_2nd_degree_system_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
   constexpr auto const A = 1.0;
   constexpr auto const tImp = ( t1 - t0 ) / 2.0;
 
-  my_funct_args_t const y0{};
+  my_funct_args_t const initial_state{0.0, 0.0};
 
-  auto my_xin = [] ( [[maybe_unused]]my_funct_arg_t t )->my_funct_ret_t
+  my_target_function_array_t const system_definition =
   {
-    my_funct_ret_t result{};
-
-    if ( t >= t0 and t <= t0 + tImp )
+    [] ( [[maybe_unused]]my_funct_arg_t t, [[maybe_unused]]my_funct_args_t const & x )->my_funct_ret_t
     {
-      result = A;
+      return std::get<1> ( x );
+    },
+
+    [] ( [[maybe_unused]]my_funct_arg_t t, [[maybe_unused]]my_funct_args_t const & x )->my_funct_ret_t
+    {
+      auto my_xin = [] ( [[maybe_unused]]my_funct_arg_t t )->my_funct_ret_t
+      {
+        my_funct_ret_t result{};
+
+        if ( t >= t0 and t <= t0 + tImp )
+        {
+          result = A;
+        }
+
+        return result;
+      };
+
+      return -mju / T * std::get<1> ( x ) - 1.0 / ( T * T ) * std::get<0> ( x ) + k / ( T * T ) * my_xin ( t );
     }
-
-    return result;
   };
 
-  auto my_f1 = [] ( [[maybe_unused]]my_funct_arg_t t, [[maybe_unused]]my_funct_args_t const & x )->my_funct_ret_t
-  {
-    return std::get<1> ( x );
-  };
-
-  auto my_f2 = [&my_xin] ( [[maybe_unused]]my_funct_arg_t t, [[maybe_unused]]my_funct_args_t const & x )->my_funct_ret_t
-  {
-    return -mju / T * std::get<1> ( x ) - 1.0 / ( T * T ) * std::get<0> ( x ) + k / ( T * T ) * my_xin ( t );
-  };
-
-  my_target_function_array_t const funct =
-  {
-    my_f1,
-    my_f2
-  };
-
-  my_funct_arg_t const h = h_in;
+  my_funct_arg_t const step = h_in;
   my_funct_arg_t const eps = eps_in;
 
-  my_diffsolve_t ds ( h,
-                      y0,
-                      funct );
+  my_diffsolve_t ds ( step,
+                      initial_state,
+                      system_definition );
 
-  my_funct_args_t const end_value = ds.from_too ( t0, t1, y0 );
+  my_funct_args_t const end_value = ds.from_too ( t0, t1, initial_state );
 
   my_funct_args_t const expected_end_value = {};
 
@@ -249,8 +246,6 @@ void smoke_test_rkf_7_runk_2()
   smoke_test_2nd_degree_system_X_2<diffsolve::diffsolve_method::runge_kutta_felberga_7th> ( /*h_in*/0.0000001, /*eps_in*/g_eps );
 }
 
-} // namespace anonymous
-
 void smoke_test_euler()
 {
   // test the rank = 1
@@ -276,4 +271,15 @@ void smoke_test_runge_kutta_felberga_7th()
 
   // test the rank = 2
   smoke_test_rkf_7_runk_2();
+}
+
+} // namespace anonymous
+
+void test_diffsolve()
+{
+  smoke_test_euler();
+
+  smoke_test_runge_kutta_4th();
+
+  smoke_test_runge_kutta_felberga_7th();
 }
