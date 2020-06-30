@@ -94,6 +94,9 @@ using target_function_t = std::function<RET_TYPE ( funct_args_t<ARGS...> const& 
 template <typename T, typename ... ARGS>
 using target_nonstationary_function_t = std::function<T ( T, funct_args_t<ARGS...>const& ) >;
 
+template<typename TARGET_FUNCTION, size_t SYSTEM_RANK>
+using target_function_array_t = std::array<TARGET_FUNCTION, SYSTEM_RANK>;
+
 template<typename RET_TYPE,
          typename ... ARGS>
 auto get_normus ( std::tuple<ARGS...> const& a, std::tuple<ARGS...> const& b )->RET_TYPE

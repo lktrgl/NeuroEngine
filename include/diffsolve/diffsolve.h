@@ -19,10 +19,6 @@ enum class diffsolve_method
 
 namespace diffsolve_details
 {
-
-template<typename TARGET_FUNCTION, size_t SYSTEM_RANK>
-using target_function_array_t = std::array<TARGET_FUNCTION, SYSTEM_RANK>;
-
 template<typename T>
 constexpr bool always_false()
 {
@@ -39,7 +35,7 @@ struct diffsolve_traits
   using funct_arg_t = FUNCT_ARG;
   using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
   using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
-  using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
+  using target_function_array_t = tuple_utils::target_function_array_t<target_function_t, SYSTEM_RANK>;
 
   static funct_args_t
   evaluate_gradient ( target_function_array_t const& f,
@@ -61,7 +57,7 @@ struct diffsolve_traits<diffsolve_method::euler, SYSTEM_RANK, FUNCT_ARG, ARGS...
   using funct_arg_t = FUNCT_ARG;
   using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
   using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
-  using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
+  using target_function_array_t = tuple_utils::target_function_array_t<target_function_t, SYSTEM_RANK>;
 
   static funct_args_t
   evaluate_gradient ( target_function_array_t const& f,
@@ -101,7 +97,7 @@ struct diffsolve_traits<diffsolve_method::runge_kutta_4th, SYSTEM_RANK, FUNCT_AR
   using funct_arg_t = FUNCT_ARG;
   using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
   using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
-  using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
+  using target_function_array_t = tuple_utils::target_function_array_t<target_function_t, SYSTEM_RANK>;
 
   static funct_args_t
   evaluate_gradient ( target_function_array_t const& f,
@@ -158,7 +154,7 @@ struct diffsolve_traits<diffsolve_method::runge_kutta_felberga_7th, SYSTEM_RANK,
   using funct_arg_t = FUNCT_ARG;
   using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
   using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
-  using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, SYSTEM_RANK>;
+  using target_function_array_t = tuple_utils::target_function_array_t<target_function_t, SYSTEM_RANK>;
 
   static funct_args_t
   evaluate_gradient ( target_function_array_t const& f,
@@ -233,7 +229,7 @@ struct diffsolve
   using funct_args_t = tuple_utils::funct_args_t<ARGS...>;
 
   using target_function_t = tuple_utils::target_nonstationary_function_t<funct_arg_t, ARGS...>;
-  using target_function_array_t = diffsolve_details::target_function_array_t<target_function_t, system_rank>;
+  using target_function_array_t = tuple_utils::target_function_array_t<target_function_t, system_rank>;
 
   diffsolve ( funct_arg_t const& step,
               funct_args_t const& min_point,

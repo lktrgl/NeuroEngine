@@ -3,6 +3,7 @@
 #include <diffsolve/diffsolve.h>
 
 #include <utils/tuple_utils.h>
+#include <utils/target_functions.h>
 
 #include <cassert>
 #include <cmath>
@@ -148,66 +149,34 @@ void smoke_test_conservative_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
 template<diffsolve::diffsolve_method METHOD_ENUM, typename ARG_TYPE>
 void smoke_test_2nd_degree_system_X_2 ( ARG_TYPE h_in, ARG_TYPE eps_in )
 {
-  constexpr size_t const system_rank = 2;
   using my_diffsolve_t = diffsolve::diffsolve <
                          METHOD_ENUM,
-                         system_rank,
+                         target_function_utils::test_function_2nd_degree_system::system_rank,
                          ARG_TYPE,
                          ARG_TYPE, ARG_TYPE >;
 
   using my_funct_ret_t = typename my_diffsolve_t::ret_type_t;
   using my_funct_arg_t = typename my_diffsolve_t::funct_arg_t;
   using my_funct_args_t = typename my_diffsolve_t::funct_args_t;
-  using my_target_function_array_t = typename my_diffsolve_t::target_function_array_t;
-
-  constexpr auto const t0 = 0.0;
-  constexpr auto const t1 = 4.0;
-  constexpr auto const T = 0.09;
-  constexpr auto const mju = 1.2;
-  constexpr auto const k = 1.0;
-
-  constexpr auto const A = 1.0;
-  constexpr auto const tImp = ( t1 - t0 ) / 2.0;
-
-  my_funct_args_t const initial_state{0.0, 0.0};
-
-  my_target_function_array_t const system_definition =
-  {
-    [] ( [[maybe_unused]]my_funct_arg_t t, [[maybe_unused]]my_funct_args_t const & x )->my_funct_ret_t
-    {
-      return std::get<1> ( x );
-    },
-
-    [] ( [[maybe_unused]]my_funct_arg_t t, [[maybe_unused]]my_funct_args_t const & x )->my_funct_ret_t
-    {
-      auto my_xin = [] ( [[maybe_unused]]my_funct_arg_t t )->my_funct_ret_t
-      {
-        my_funct_ret_t result{};
-
-        if ( t >= t0 and t <= t0 + tImp )
-        {
-          result = A;
-        }
-
-        return result;
-      };
-
-      return -mju / T * std::get<1> ( x ) - 1.0 / ( T * T ) * std::get<0> ( x ) + k / ( T * T ) * my_xin ( t );
-    }
-  };
 
   my_funct_arg_t const step = h_in;
   my_funct_arg_t const eps = eps_in;
 
   my_diffsolve_t ds ( step,
-                      initial_state,
-                      system_definition );
+                      target_function_utils::test_function_2nd_degree_system::initial_state,
+                      target_function_utils::test_function_2nd_degree_system::system_definition );
 
-  my_funct_args_t const end_value = ds.from_too ( t0, t1, initial_state );
+  my_funct_args_t const end_value = ds.from_too (
+                                      target_function_utils::test_function_2nd_degree_system::t0,
+                                      target_function_utils::test_function_2nd_degree_system::t1,
+                                      target_function_utils::test_function_2nd_degree_system::initial_state );
 
-  my_funct_args_t const expected_end_value = {};
-
-  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> ( end_value, expected_end_value ) ) < eps );
+  assert ( fabs ( tuple_utils::get_normus<my_funct_ret_t> (
+                    end_value,
+                    target_function_utils::test_function_2nd_degree_system::expected_end_value
+                  )
+                ) < eps
+         );
 }
 
 void smoke_test_euler_rank_1()

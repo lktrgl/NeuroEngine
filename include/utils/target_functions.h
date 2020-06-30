@@ -61,5 +61,58 @@ struct test_function_qubic_t
   static constexpr auto const expected_x_min = test_function_qubic_t::d / sqrt ( 3.0 );
 };
 
+struct test_function_2nd_degree_system
+{
+  static constexpr size_t const system_rank = 2;
+
+  using funct_ret_t = double;
+  using funct_arg_t = double;
+  using funct_args_t = tuple_utils::funct_args_t<funct_arg_t, funct_arg_t>;
+  using target_function_t = tuple_utils::target_nonstationary_function_t<funct_ret_t, funct_arg_t, funct_arg_t>;
+  using target_function_array_t = tuple_utils::target_function_array_t<target_function_t, system_rank>;
+
+  static constexpr auto const t0 = 0.0;
+  static constexpr auto const t1 = 4.0;
+  static constexpr auto const T = 0.09;
+  static constexpr auto const mju = 1.2;
+  static constexpr auto const k = 1.0;
+
+  static constexpr auto const A = 1.0;
+  static constexpr auto const tImp = ( t1 - t0 ) / 2.0;
+
+  static constexpr funct_args_t const initial_state = {0.0, 0.0};
+
+  static constexpr funct_args_t const expected_end_value = {0.0, 0.0};
+
+
+  static target_function_array_t const system_definition;
+};
+
+inline
+test_function_2nd_degree_system::target_function_array_t const
+test_function_2nd_degree_system::system_definition =
+{
+  [] ( [[maybe_unused]]funct_arg_t t, [[maybe_unused]]funct_args_t const & x )->funct_ret_t
+  {
+    return std::get<1> ( x );
+  },
+
+  [] ( [[maybe_unused]]funct_arg_t t, [[maybe_unused]]funct_args_t const & x )->funct_ret_t
+  {
+    auto my_xin = [] ( [[maybe_unused]]funct_arg_t t )->funct_ret_t
+    {
+      funct_ret_t result{};
+
+      if ( t >= t0 and t <= t0 + tImp )
+      {
+        result = A;
+      }
+
+      return result;
+    };
+
+    return -mju / T * std::get<1> ( x ) - 1.0 / ( T * T ) * std::get<0> ( x ) + k / ( T * T ) * my_xin ( t );
+  }
+};
 
 }  // namespace target_function_utils
